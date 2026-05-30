@@ -24,18 +24,10 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: true,
     credentials: true,
   })
 );
-app.use(express.json());
-
 app.get("/", (req, res) => {
   res.send("Buddy API is running");
 });
@@ -53,15 +45,27 @@ app.use("/api/contact", contactRoutes);
 
 const PORT = process.env.PORT || 5001;
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("MongoDB connected");
+let isConnected = false;
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+async function connectDB() {
+  if (isConnected) return;
+
+  await mongoose.connect(process.env.MONGODB_URI);
+
+  isConnected = true;
+  console.log("MongoDB connected");
+}
+
+module.exports = { app, connectDB };
+
+if (require.main === module) {
+  connectDB()
+    .then(() => {
+      app.listen(process.env.PORT || 5001, () => {
+        console.log(`Server running on port ${process.env.PORT || 5001}`);
+      });
+    })
+    .catch((error) => {
+      console.error("MongoDB connection error:", error);
     });
-  })
-  .catch((error) => {
-    console.error("MongoDB connection error:", error);
-  });
+}

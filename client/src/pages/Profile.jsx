@@ -9,7 +9,7 @@ import {
   KeyRound,
   Mail,
   Shield,
-  Dowload,
+  Download
 } from "lucide-react";
 import api from "../api/api";
 

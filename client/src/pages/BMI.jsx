@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Activity, Dumbbell, Flame, Percent, UserRound } from "lucide-react";
 import api from "../api/api";
@@ -56,22 +56,22 @@ function calculateCalories({ gender, weight, height, age, activity }) {
 
 function getSuggestion(bmi, bodyFat) {
   if (bmi >= 30) {
-    return "Your BMI is high. Focus on fat loss, strength training, walking, and a controlled diet. Personal training will help you stay consistent and avoid mistakes.";
+    return "Your BMI is high. Start with fat loss, strength training, walking, and a controlled diet. Personal training will help you avoid mistakes and stay consistent.";
   }
 
   if (bmi >= 25) {
-    return "You are slightly above the healthy BMI range. A structured workout and diet plan can help you cut fat safely.";
+    return "You are slightly above the healthy BMI range. A structured workout and fat-loss diet can help you cut safely.";
   }
 
   if (bmi < 18.5) {
-    return "You are under the healthy BMI range. Focus on strength training and a calorie-surplus diet.";
+    return "You are below the healthy BMI range. Focus on strength training and a calorie-surplus diet.";
   }
 
   if (bodyFat && bodyFat > 25) {
-    return "Your BMI is normal, but fat percentage looks high. Strength training and protein-focused meals will help improve body composition.";
+    return "Your BMI is normal, but fat percentage looks high. Focus on strength training and protein-based meals.";
   }
 
-  return "Your numbers look decent. Keep tracking your progress and follow a consistent workout plan.";
+  return "Your numbers look decent. Keep tracking your progress and stay consistent.";
 }
 
 function BMI() {
@@ -91,6 +91,20 @@ function BMI() {
     activity: "active",
   });
 
+  useEffect(() => {
+    const savedResult = localStorage.getItem("buddyLatestBmiResult");
+    const savedForm = localStorage.getItem("buddyLatestBmiForm");
+
+    if (savedResult) {
+      setResult(JSON.parse(savedResult));
+      setShowForm(false);
+    }
+
+    if (savedForm) {
+      setForm(JSON.parse(savedForm));
+    }
+  }, []);
+
   const updateField = (field, value) => {
     setForm({
       ...form,
@@ -109,6 +123,7 @@ function BMI() {
     const category = getBmiCategory(bmi);
 
     const bodyFat = calculateBodyFat(form);
+
     const musclePercentage = bodyFat
       ? Number((100 - bodyFat - 15).toFixed(1))
       : null;
@@ -122,10 +137,14 @@ function BMI() {
       bodyFat,
       musclePercentage,
       suggestion: getSuggestion(bmi, bodyFat),
+      calculatedAt: new Date().toISOString(),
     };
 
     setResult(finalResult);
     setShowForm(false);
+
+    localStorage.setItem("buddyLatestBmiResult", JSON.stringify(finalResult));
+    localStorage.setItem("buddyLatestBmiForm", JSON.stringify(form));
 
     try {
       setSaving(true);
@@ -143,12 +162,22 @@ function BMI() {
     }
   };
 
+  const editDetails = () => {
+    setShowForm(true);
+  };
+
+  const clearResult = () => {
+    localStorage.removeItem("buddyLatestBmiResult");
+    setResult(null);
+    setShowForm(true);
+  };
+
   return (
     <div className="premium-bmi-page">
       <div className="premium-bmi-header">
         <p>Performance Hub</p>
         <h1>Body Metrics</h1>
-        <span>Calculate BMI, calories, fat and muscle estimate.</span>
+        <span>BMI, calories, fat percentage and muscle estimate.</span>
       </div>
 
       {showForm && (
@@ -246,7 +275,7 @@ function BMI() {
 
             <div className="metric-premium-card">
               <Flame size={26} />
-              <p>Calories</p>
+              <p>Calorie</p>
               <h2>{result.calories}</h2>
               <span>kcal/day</span>
             </div>
@@ -269,7 +298,7 @@ function BMI() {
           <div className="premium-suggestion-card">
             <div>
               <Activity size={30} />
-              <h3>Trainer Suggestion</h3>
+              <h3>Suggestion</h3>
             </div>
 
             <p>{result.suggestion}</p>
@@ -278,11 +307,12 @@ function BMI() {
               Take Personal Training
             </button>
 
-            <button
-              className="edit-bmi-btn"
-              onClick={() => setShowForm(true)}
-            >
+            <button className="edit-bmi-btn" onClick={editDetails}>
               Edit Details
+            </button>
+
+            <button className="edit-bmi-btn" onClick={clearResult}>
+              Clear Result
             </button>
 
             {saving && <small>Saving BMI record...</small>}

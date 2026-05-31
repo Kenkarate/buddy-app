@@ -9,6 +9,7 @@ import {
   KeyRound,
   Mail,
   Shield,
+  Dowload,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -17,6 +18,8 @@ function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [openFaq, setOpenFaq] = useState(0);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   const [queryForm, setQueryForm] = useState({
     type: "Query",
@@ -101,6 +104,47 @@ function Profile() {
   if (!profile) {
     return <p className="muted">Loading profile...</p>;
   }
+
+  useEffect(() => {
+  const dismissed = localStorage.getItem("buddyInstallDismissed");
+
+  const handleBeforeInstallPrompt = (e) => {
+    e.preventDefault();
+    setInstallPrompt(e);
+
+    if (dismissed !== "true") {
+      setShowInstallModal(true);
+    }
+  };
+
+  window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+  return () => {
+    window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  };
+}, []);
+const installApp = async () => {
+  if (!installPrompt) {
+    alert("Install option is not available yet. Use browser menu → Add to Home Screen.");
+    return;
+  }
+
+  installPrompt.prompt();
+
+  const result = await installPrompt.userChoice;
+
+  if (result.outcome === "accepted") {
+    setShowInstallModal(false);
+    localStorage.setItem("buddyInstallDismissed", "true");
+  }
+
+  setInstallPrompt(null);
+};
+
+const dismissInstallModal = () => {
+  setShowInstallModal(false);
+  localStorage.setItem("buddyInstallDismissed", "true");
+};
 
   return (
     <div className="elite-profile-page">
@@ -340,6 +384,28 @@ function Profile() {
       <button className="elite-signout-btn" onClick={logout}>
         Sign Out
       </button>
+      {showInstallModal && (
+  <div className="install-app-modal">
+    <div className="install-app-card">
+      <div className="install-icon">
+        <Download size={26} />
+      </div>
+
+      <div>
+        <h3>Install Buddy App</h3>
+        <p>
+          Add Buddy to your home screen for a faster app-like experience.
+        </p>
+      </div>
+
+      <button onClick={installApp}>Install</button>
+
+      <button className="install-dismiss-btn" onClick={dismissInstallModal}>
+        Later
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }

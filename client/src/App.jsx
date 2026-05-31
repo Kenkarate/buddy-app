@@ -27,6 +27,7 @@ import DummyRazorpay from "./pages/DummyRazorpay";
 
 import WorkoutList from "./pages/WorkoutList";
 import WorkoutDetail from "./pages/WorkoutDetail";
+import ComingSoon from "./pages/ComingSoon";
 
 function UserLayout({ children }) {
   return (
@@ -62,6 +63,7 @@ function App() {
         <Route path="/home-workout-setup" element={<HomeWorkoutSetup />} />
 
 <Route path="/razorpay/:program" element={<DummyRazorpay />} />
+<Route path="/coming-soon" element={<ComingSoon />} />
 
         <Route path="/payment/:program" element={<Payment />} />
 
@@ -72,6 +74,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        
 
         <Route
           path="/workouts"

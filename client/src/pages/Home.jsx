@@ -6,8 +6,8 @@ function Home() {
  const chooseProgram = (program) => {
   localStorage.setItem("buddySelectedProgram", program);
 
-  if (program === "home-workout") {
-    navigate("/home-workout-setup");
+  if (program === "personal-training") {
+    navigate("/coming-soon");
     return;
   }
 

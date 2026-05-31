@@ -6,10 +6,16 @@ function DummyRazorpay() {
   const { program } = useParams();
 
   const payNow = () => {
-    localStorage.setItem("buddySelectedProgram", program);
-    localStorage.setItem("buddyPaymentStatus", "paid");
-    navigate("/workouts");
-  };
+  localStorage.setItem("buddySelectedProgram", program);
+  localStorage.setItem("buddyPaymentStatus", "paid");
+
+  if (program === "home-workout") {
+    navigate("/home-workout-setup");
+    return;
+  }
+
+  navigate("/workouts");
+};
 
   return (
     <div className="dummy-razorpay-page">

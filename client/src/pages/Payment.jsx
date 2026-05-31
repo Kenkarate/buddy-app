@@ -29,16 +29,16 @@ function Payment() {
       ],
     },
     "home-workout": {
-      title: "Home Workout",
-      price: "₹299",
-      description: "Home workout suggestions based on your available equipment.",
-      benefits: [
-        "Equipment-based workout suggestions",
-        "No gym required",
-        "Sets and reps included",
-        "Beginner-friendly home plans",
-      ],
-    },
+  title: "Home Workout",
+  price: "₹299",
+  description: "Home workout suggestions based on your available equipment.",
+  benefits: [
+    "Equipment-based workout suggestions",
+    "No gym required",
+    "Sets and reps included",
+    "Beginner-friendly home plans",
+  ],
+},
   };
 
   const selectedPlan = planDetails[program] || planDetails["normal-workouts"];

@@ -28,6 +28,21 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  if (req.body?.type === "Buffer" && Array.isArray(req.body.data)) {
+    try {
+      req.body = JSON.parse(Buffer.from(req.body.data).toString("utf8"));
+    } catch (error) {
+      console.error("Failed to parse buffer body:", error);
+    }
+  }
+
+  next();
+});
 app.get("/", (req, res) => {
   res.send("Buddy API is running");
 });

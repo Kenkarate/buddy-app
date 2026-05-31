@@ -2039,3 +2039,188 @@ button {
   color: var(--elite-muted);
   font-size: 14px;
 }
+/* Premium BMI Page */
+
+.premium-bmi-page {
+  padding-bottom: 40px;
+}
+
+.premium-bmi-header {
+  margin-bottom: 26px;
+}
+
+.premium-bmi-header p {
+  color: var(--elite-lime);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.premium-bmi-header h1 {
+  color: #fff;
+  font-size: 42px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0 0 12px;
+  font-weight: 950;
+}
+
+.premium-bmi-header span {
+  color: var(--elite-muted);
+  line-height: 1.5;
+}
+
+.premium-bmi-form {
+  background: linear-gradient(180deg, #171a16, #10120f);
+  border: 1px solid rgba(234, 255, 184, 0.12);
+  border-radius: 30px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.premium-bmi-form h2 {
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 21px;
+  margin: 0 0 26px;
+}
+
+.premium-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.premium-bmi-form label {
+  display: block;
+}
+
+.premium-bmi-form label span {
+  display: block;
+  color: var(--elite-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.premium-bmi-form input,
+.premium-bmi-form select {
+  background: #20231f;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  min-height: 56px;
+  padding: 0 14px;
+  margin-bottom: 16px;
+}
+
+.premium-bmi-form button {
+  background: var(--elite-lime);
+  color: #111;
+  margin-top: 12px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.metric-premium-card {
+  min-height: 158px;
+  background: linear-gradient(180deg, #171a16, #0d0f0c);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 26px;
+  padding: 18px;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.35);
+}
+
+.metric-premium-card.highlight {
+  border-color: rgba(234, 255, 184, 0.35);
+  background: radial-gradient(circle at top right, rgba(234,255,184,0.15), #11130f 55%);
+}
+
+.metric-premium-card svg {
+  color: var(--elite-lime);
+  margin-bottom: 18px;
+}
+
+.metric-premium-card p {
+  color: var(--elite-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.metric-premium-card h2 {
+  color: #fff;
+  font-size: 42px;
+  line-height: 1;
+  margin: 0 0 8px;
+}
+
+.metric-premium-card span {
+  color: var(--elite-lime);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.premium-suggestion-card {
+  background: linear-gradient(180deg, rgba(234,255,184,0.12), #12140f);
+  border: 1px solid rgba(234,255,184,0.22);
+  border-radius: 30px;
+  padding: 22px;
+  margin-top: 22px;
+}
+
+.premium-suggestion-card > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.premium-suggestion-card svg {
+  color: var(--elite-lime);
+}
+
+.premium-suggestion-card h3 {
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.premium-suggestion-card p {
+  color: var(--elite-muted);
+  line-height: 1.65;
+  margin: 0 0 18px;
+}
+
+.premium-suggestion-card button {
+  background: var(--elite-lime);
+  color: #111;
+}
+
+.edit-bmi-btn {
+  background: #20231f !important;
+  color: var(--elite-lime) !important;
+  border: 1px solid rgba(234,255,184,0.18);
+  margin-top: 10px;
+}
+
+.premium-suggestion-card small {
+  display: block;
+  margin-top: 10px;
+  color: var(--elite-muted);
+  text-align: center;
+}

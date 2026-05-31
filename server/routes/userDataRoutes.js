@@ -50,9 +50,56 @@ router.post("/weight", protect, async (req, res) => {
   res.json(user.weightRecords);
 });
 
-router.get("/bmi", protect, async (req, res) => {
-  const user = await User.findById(req.user.id);
-  res.json(user.bmiRecords);
+router.post("/bmi", protect, async (req, res) => {
+  try {
+    const { height, weight, bmi, category } = req.body;
+
+    if (!height || !weight) {
+      return res.status(400).json({
+        message: "Height and weight are required",
+        receivedBody: req.body,
+      });
+    }
+
+    const heightNumber = Number(height);
+    const weightNumber = Number(weight);
+
+    const finalBmi =
+      bmi ||
+      Number(
+        (weightNumber / ((heightNumber / 100) * (heightNumber / 100))).toFixed(1)
+      );
+
+    let finalCategory = category || "Normal";
+
+    if (!category) {
+      if (finalBmi < 18.5) finalCategory = "Underweight";
+      else if (finalBmi < 25) finalCategory = "Normal";
+      else if (finalBmi < 30) finalCategory = "Overweight";
+      else finalCategory = "Obese";
+    }
+
+    const user = await User.findById(req.user.id);
+
+    user.bmiRecords.push({
+      height: heightNumber,
+      weight: weightNumber,
+      bmi: finalBmi,
+      category: finalCategory,
+      date: new Date(),
+    });
+
+    await user.save();
+
+    res.json({
+      bmi: finalBmi,
+      category: finalCategory,
+      records: user.bmiRecords,
+    });
+  } catch (error) {
+    console.error("BMI ERROR:", error);
+    res.status(500).json({ message: error.message || "Failed to save BMI" });
+  }
 });
 
 router.post("/bmi", protect, async (req, res) => {

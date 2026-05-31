@@ -1,22 +1,31 @@
-import { useEffect, useState } from "react";
-import { Save, UserRound, Flame, Droplet } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Activity, Dumbbell, Flame, Percent, UserRound } from "lucide-react";
 import api from "../api/api";
+
+function getBmiCategory(bmi) {
+  if (bmi < 18.5) return "Underweight";
+  if (bmi < 25) return "Normal";
+  if (bmi < 30) return "Overweight";
+  return "Obese";
+}
 
 function calculateBodyFat({ gender, waist, neck, height }) {
   const w = Number(waist);
   const n = Number(neck);
   const h = Number(height);
 
-  if (!w || !n || !h) return null;
+  if (!w || !n || !h || w <= n) return null;
+
+  let bodyFat;
 
   if (gender === "female") {
-    return null;
+    bodyFat = 76.76 * Math.log10(w - n) - 68.15 * Math.log10(h) + 44.74;
+  } else {
+    bodyFat = 86.01 * Math.log10(w - n) - 70.041 * Math.log10(h) + 36.76;
   }
 
-  const bodyFat =
-    86.01 * Math.log10(w - n) - 70.041 * Math.log10(h) + 36.76;
-
-  return Number(bodyFat.toFixed(1));
+  return Math.max(3, Number(bodyFat.toFixed(1)));
 }
 
 function calculateCalories({ gender, weight, height, age, activity }) {
@@ -34,7 +43,7 @@ function calculateCalories({ gender, weight, height, age, activity }) {
     bmr = 10 * w + 6.25 * h - 5 * a + 5;
   }
 
-  const multipliers = {
+  const multiplierMap = {
     sedentary: 1.2,
     light: 1.375,
     moderate: 1.55,
@@ -42,39 +51,45 @@ function calculateCalories({ gender, weight, height, age, activity }) {
     athlete: 1.9,
   };
 
-  return Math.round(bmr * multipliers[activity]);
+  return Math.round(bmr * multiplierMap[activity]);
 }
 
-function getBmiCategory(bmi) {
-  if (bmi < 18.5) return "Underweight";
-  if (bmi < 25) return "Normal";
-  if (bmi < 30) return "Overweight";
-  return "Obese";
+function getSuggestion(bmi, bodyFat) {
+  if (bmi >= 30) {
+    return "Your BMI is high. Focus on fat loss, strength training, walking, and a controlled diet. Personal training will help you stay consistent and avoid mistakes.";
+  }
+
+  if (bmi >= 25) {
+    return "You are slightly above the healthy BMI range. A structured workout and diet plan can help you cut fat safely.";
+  }
+
+  if (bmi < 18.5) {
+    return "You are under the healthy BMI range. Focus on strength training and a calorie-surplus diet.";
+  }
+
+  if (bodyFat && bodyFat > 25) {
+    return "Your BMI is normal, but fat percentage looks high. Strength training and protein-focused meals will help improve body composition.";
+  }
+
+  return "Your numbers look decent. Keep tracking your progress and follow a consistent workout plan.";
 }
 
 function BMI() {
-  const [records, setRecords] = useState([]);
+  const navigate = useNavigate();
+
   const [showForm, setShowForm] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [result, setResult] = useState(null);
 
   const [form, setForm] = useState({
     gender: "male",
-    age: "30",
-    weight: "",
-    height: "",
-    waist: "",
-    neck: "",
-    activity: "moderate",
+    age: "27",
+    weight: "96",
+    height: "177",
+    waist: "80",
+    neck: "32",
+    activity: "active",
   });
-
-  const loadRecords = async () => {
-    const res = await api.get("/user/bmi");
-    setRecords(res.data);
-  };
-
-  useEffect(() => {
-    loadRecords();
-  }, []);
 
   const updateField = (field, value) => {
     setForm({
@@ -83,51 +98,64 @@ function BMI() {
     });
   };
 
-  const calculate = async (e) => {
+  const calculateMetrics = async (e) => {
     e.preventDefault();
 
-    const heightNumber = Number(form.height);
-    const weightNumber = Number(form.weight);
+    const height = Number(form.height);
+    const weight = Number(form.weight);
 
-    const heightM = heightNumber / 100;
-    const bmi = Number((weightNumber / (heightM * heightM)).toFixed(1));
+    const heightM = height / 100;
+    const bmi = Number((weight / (heightM * heightM)).toFixed(1));
     const category = getBmiCategory(bmi);
 
     const bodyFat = calculateBodyFat(form);
+    const musclePercentage = bodyFat
+      ? Number((100 - bodyFat - 15).toFixed(1))
+      : null;
+
     const calories = calculateCalories(form);
 
-    await api.post("/user/bmi", {
-      height: heightNumber,
-      weight: weightNumber,
-    });
-
-    setResult({
+    const finalResult = {
       bmi,
       category,
-      bodyFat,
       calories,
-    });
+      bodyFat,
+      musclePercentage,
+      suggestion: getSuggestion(bmi, bodyFat),
+    };
 
+    setResult(finalResult);
     setShowForm(false);
-    loadRecords();
+
+    try {
+      setSaving(true);
+
+      await api.post("/user/bmi", {
+        height,
+        weight,
+        bmi,
+        category,
+      });
+    } catch (error) {
+      console.error("Failed to save BMI:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="performance-page">
-      <div className="performance-header">
-        <div>
-          <h1>Performance Hub</h1>
-          <p>Calculate and track your foundational metrics.</p>
-        </div>
+    <div className="premium-bmi-page">
+      <div className="premium-bmi-header">
+        <p>Performance Hub</p>
+        <h1>Body Metrics</h1>
+        <span>Calculate BMI, calories, fat and muscle estimate.</span>
       </div>
 
       {showForm && (
-        <form onSubmit={calculate} className="performance-form-card">
+        <form className="premium-bmi-form" onSubmit={calculateMetrics}>
           <h2>Personal Data</h2>
 
-          <div className="form-divider" />
-
-          <div className="metric-form-grid">
+          <div className="premium-form-grid">
             <label>
               <span>Gender</span>
               <select
@@ -145,50 +173,45 @@ function BMI() {
                 type="number"
                 value={form.age}
                 onChange={(e) => updateField("age", e.target.value)}
-                placeholder="30"
                 required
               />
             </label>
 
             <label>
-              <span>Weight (kg)</span>
+              <span>Weight kg</span>
               <input
                 type="number"
                 value={form.weight}
                 onChange={(e) => updateField("weight", e.target.value)}
-                placeholder="80"
                 required
               />
             </label>
 
             <label>
-              <span>Height (cm)</span>
+              <span>Height cm</span>
               <input
                 type="number"
                 value={form.height}
                 onChange={(e) => updateField("height", e.target.value)}
-                placeholder="180"
                 required
               />
             </label>
 
             <label>
-              <span>Waist (cm)</span>
+              <span>Waist cm</span>
               <input
                 type="number"
                 value={form.waist}
                 onChange={(e) => updateField("waist", e.target.value)}
-                placeholder="80"
               />
             </label>
 
             <label>
-              <span>Neck (cm)</span>
+              <span>Neck cm</span>
               <input
                 type="number"
                 value={form.neck}
                 onChange={(e) => updateField("neck", e.target.value)}
-                placeholder="38"
               />
             </label>
           </div>
@@ -201,7 +224,7 @@ function BMI() {
             >
               <option value="sedentary">Sedentary</option>
               <option value="light">Light Exercise</option>
-              <option value="moderate">Moderate Exercise</option>
+              <option value="moderate">Moderate</option>
               <option value="active">Active</option>
               <option value="athlete">Athlete</option>
             </select>
@@ -212,85 +235,58 @@ function BMI() {
       )}
 
       {!showForm && result && (
-        <button className="edit-metrics-btn" onClick={() => setShowForm(true)}>
-          Edit Personal Data
-        </button>
-      )}
-
-      {result && (
         <>
-          <h2 className="calculations-title">Calculations</h2>
-
-          <div className="metric-result-card">
-            <div>
-              <p>Body Mass Index</p>
-              <h3>
-                {result.bmi}
-                <span>BMI</span>
-              </h3>
-              <small>{result.category}</small>
+          <div className="metrics-grid">
+            <div className="metric-premium-card highlight">
+              <UserRound size={26} />
+              <p>BMI</p>
+              <h2>{result.bmi}</h2>
+              <span>{result.category}</span>
             </div>
 
-            <UserRound size={30} />
+            <div className="metric-premium-card">
+              <Flame size={26} />
+              <p>Calories</p>
+              <h2>{result.calories}</h2>
+              <span>kcal/day</span>
+            </div>
+
+            <div className="metric-premium-card">
+              <Percent size={26} />
+              <p>Fat %</p>
+              <h2>{result.bodyFat || "--"}</h2>
+              <span>{result.bodyFat ? "Estimated" : "Need waist/neck"}</span>
+            </div>
+
+            <div className="metric-premium-card">
+              <Dumbbell size={26} />
+              <p>Muscle %</p>
+              <h2>{result.musclePercentage || "--"}</h2>
+              <span>Estimated</span>
+            </div>
           </div>
 
-          <div className="metric-result-card">
+          <div className="premium-suggestion-card">
             <div>
-              <p>Estimated Body Fat</p>
-              <h3>
-                {result.bodyFat || "--"}
-                <span>%</span>
-              </h3>
-              <small>
-                {result.bodyFat
-                  ? "Based on waist, neck and height"
-                  : "Add waist and neck to calculate"}
-              </small>
+              <Activity size={30} />
+              <h3>Trainer Suggestion</h3>
             </div>
 
-            <Droplet size={30} />
+            <p>{result.suggestion}</p>
+
+            <button onClick={() => navigate("/payment/personal-training")}>
+              Take Personal Training
+            </button>
+
+            <button
+              className="edit-bmi-btn"
+              onClick={() => setShowForm(true)}
+            >
+              Edit Details
+            </button>
+
+            {saving && <small>Saving BMI record...</small>}
           </div>
-
-          <div className="metric-result-card">
-            <div>
-              <p>Target Daily Calories</p>
-              <h3>
-                {result.calories}
-                <span>KCAL</span>
-              </h3>
-              <small>Estimated maintenance calories</small>
-            </div>
-
-            <Flame size={30} />
-          </div>
-
-          <button className="sync-profile-btn">
-            <Save size={22} />
-            Sync to Profile
-          </button>
-        </>
-      )}
-
-      {!result && records.length > 0 && (
-        <>
-          <h2 className="calculations-title">Previous BMI</h2>
-
-          {records.slice(0, 2).map((record) => (
-            <div className="metric-result-card" key={record._id}>
-              <div>
-                <p>Body Mass Index</p>
-                <h3>
-                  {record.bmi}
-                  <span>BMI</span>
-                </h3>
-                <small>
-                  {record.height} cm / {record.weight} kg
-                </small>
-              </div>
-
-              <UserRound size={30} />
-            </div>
-          ))}
         </>
       )}
     </div>

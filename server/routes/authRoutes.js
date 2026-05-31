@@ -53,17 +53,33 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET missing");
+      return res.status(500).json({ message: "Server JWT secret is missing" });
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
 
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
+      console.log("User not found:", normalizedEmail);
       return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    if (!user.password) {
+      console.error("User has no password field:", normalizedEmail);
+      return res.status(500).json({ message: "User password missing in database" });
     }
 
     const passwordMatches = await bcrypt.compare(password, user.password);
 
     if (!passwordMatches) {
+      console.log("Password mismatch for:", normalizedEmail);
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
@@ -79,7 +95,8 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Login failed" });
+    console.error("LOGIN ERROR:", error);
+    res.status(500).json({ message: error.message || "Login failed" });
   }
 });
 

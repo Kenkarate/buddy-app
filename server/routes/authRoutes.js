@@ -51,10 +51,16 @@ const normalizedEmail = email.trim().toLowerCase();
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    console.log("LOGIN BODY:", req.body);
+
+    const email = req.body?.email;
+    const password = req.body?.password;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res.status(400).json({
+        message: "Email and password are required",
+        receivedBody: req.body,
+      });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -69,11 +75,6 @@ router.post("/login", async (req, res) => {
     if (!user) {
       console.log("User not found:", normalizedEmail);
       return res.status(400).json({ message: "Invalid email or password" });
-    }
-
-    if (!user.password) {
-      console.error("User has no password field:", normalizedEmail);
-      return res.status(500).json({ message: "User password missing in database" });
     }
 
     const passwordMatches = await bcrypt.compare(password, user.password);

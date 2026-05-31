@@ -2420,3 +2420,237 @@ button {
 .personal-diet-card li::marker {
   color: #f8d75d;
 }
+/* Home Workout Setup */
+
+.home-workout-setup-page,
+.premium-payment-page,
+.dummy-razorpay-page {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #050605;
+  padding: 34px 24px 110px;
+  color: #fff;
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.equipment-card {
+  min-height: 130px;
+  background: #171a16;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 18px;
+}
+
+.equipment-card.active {
+  background: rgba(234,255,184,0.12);
+  border-color: rgba(234,255,184,0.45);
+  color: var(--elite-lime);
+}
+
+.equipment-card span {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 13px;
+}
+
+.show-suggestion-btn {
+  background: var(--elite-lime);
+  color: #111;
+  margin-bottom: 24px;
+}
+
+.home-suggestion-list h2 {
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.home-suggestion-card,
+.dummy-workout-card {
+  background: linear-gradient(180deg, #171a16, #10120f);
+  border: 1px solid rgba(234,255,184,0.12);
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+
+.home-suggestion-card p,
+.dummy-workout-card p {
+  color: var(--elite-lime);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.home-suggestion-card h3,
+.dummy-workout-card h2 {
+  color: #fff;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.home-suggestion-card span,
+.dummy-workout-card span {
+  display: block;
+  color: var(--elite-muted);
+  margin-bottom: 8px;
+}
+
+.home-suggestion-list button {
+  background: var(--elite-lime);
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dummy-workout-list {
+  display: grid;
+  gap: 14px;
+}
+
+/* Payment */
+
+.payment-hero-premium {
+  background: radial-gradient(circle at top right, rgba(234,255,184,0.16), #11130f 55%);
+  border: 1px solid rgba(234,255,184,0.2);
+  border-radius: 30px;
+  padding: 26px;
+  margin-bottom: 22px;
+}
+
+.payment-hero-premium svg {
+  color: var(--elite-lime);
+  margin-bottom: 18px;
+}
+
+.payment-hero-premium p {
+  color: var(--elite-lime);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.payment-hero-premium h1 {
+  color: #fff;
+  font-size: 38px;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.payment-hero-premium span {
+  color: var(--elite-muted);
+  line-height: 1.5;
+}
+
+.premium-price-card {
+  background: #171a16;
+  border-radius: 30px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.premium-price-card svg {
+  color: var(--elite-lime);
+}
+
+.premium-price-card h2 {
+  color: #fff;
+  font-size: 52px;
+  margin: 14px 0 6px;
+}
+
+.premium-price-card p {
+  color: var(--elite-muted);
+}
+
+.premium-benefits {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.premium-benefits div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #d1d5db;
+}
+
+.premium-price-card button {
+  background: var(--elite-lime);
+  color: #111;
+}
+
+/* Dummy Razorpay */
+
+.dummy-razorpay-page {
+  display: grid;
+  place-items: center;
+}
+
+.razorpay-box {
+  width: 100%;
+  background: #fff;
+  color: #111;
+  border-radius: 28px;
+  padding: 26px;
+}
+
+.razorpay-logo {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: #2563eb;
+  color: #fff;
+  margin-bottom: 18px;
+}
+
+.razorpay-box h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.razorpay-box p {
+  color: #6b7280;
+}
+
+.razorpay-summary {
+  background: #f3f4f6;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.secure-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #16a34a;
+  margin: 18px 0;
+}
+
+.razorpay-box button {
+  background: #2563eb;
+  color: #fff;
+}

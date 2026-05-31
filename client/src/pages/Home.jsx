@@ -3,9 +3,16 @@ import { useNavigate } from "react-router-dom";
 function Home() {
   const navigate = useNavigate();
 
-  const chooseProgram = (program) => {
-    navigate(`/payment/${program}`);
-  };
+ const chooseProgram = (program) => {
+  localStorage.setItem("buddySelectedProgram", program);
+
+  if (program === "home-workout") {
+    navigate("/home-workout-setup");
+    return;
+  }
+
+  navigate(`/payment/${program}`);
+};
 
   return (
     <div className="home-screen">
@@ -19,7 +26,7 @@ function Home() {
         <p className="eyebrow">Start Training</p>
         <h1>Choose Your Workout Plan</h1>
         <p className="muted">
-          3 days free trial. Workouts, diet, BMI and progress tracking.
+          Choose your plan and start training.. Workouts, diet, BMI and progress tracking.
         </p>
       </div>
 

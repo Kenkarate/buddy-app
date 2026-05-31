@@ -1,95 +1,76 @@
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../api/api";
-
-const programNames = {
-  "personal-training": "Personal Training",
-  "normal-workouts": "Normal Workouts",
-  "home-workout": "Home Workout",
-};
+import { useNavigate, useParams } from "react-router-dom";
+import { CheckCircle, Crown, Dumbbell } from "lucide-react";
 
 function Payment() {
-  const { program } = useParams();
   const navigate = useNavigate();
+  const { program } = useParams();
 
-  const startTrial = async () => {
-    const token = localStorage.getItem("buddyToken");
-
-    if (!token) {
-      localStorage.setItem("selectedProgram", program);
-      navigate("/register");
-      return;
-    }
-
-    const res = await api.post("/subscription/start-trial", {
-      selectedProgram: program,
-    });
-
-    const oldUser = JSON.parse(localStorage.getItem("buddyUser") || "{}");
-
-    localStorage.setItem(
-      "buddyUser",
-      JSON.stringify({
-        ...oldUser,
-        selectedProgram: res.data.selectedProgram,
-        subscriptionStatus: res.data.subscriptionStatus,
-      })
-    );
-
-    navigate("/workouts");
+  const planDetails = {
+    "personal-training": {
+      title: "Personal Training",
+      price: "₹999",
+      description: "Trainer-guided workout and personal diet support.",
+      benefits: [
+        "Personal workout plan",
+        "Personal diet guidance",
+        "Progress tracking",
+        "Trainer support",
+      ],
+    },
+    "normal-workouts": {
+      title: "Normal Workout",
+      price: "₹499",
+      description: "Gym workout plans with all body-part sessions.",
+      benefits: [
+        "Chest, back, legs, shoulders, arms and core",
+        "Sets and reps included",
+        "Beginner-friendly plans",
+        "Access to workout dashboard",
+      ],
+    },
+    "home-workout": {
+      title: "Home Workout",
+      price: "₹299",
+      description: "Home workout suggestions based on your available equipment.",
+      benefits: [
+        "Equipment-based workout suggestions",
+        "No gym required",
+        "Sets and reps included",
+        "Beginner-friendly home plans",
+      ],
+    },
   };
 
-  const mockPayment = async () => {
-    const token = localStorage.getItem("buddyToken");
+  const selectedPlan = planDetails[program] || planDetails["normal-workouts"];
 
-    if (!token) {
-      localStorage.setItem("selectedProgram", program);
-      navigate("/register");
-      return;
-    }
-
-    const res = await api.post("/subscription/mock-payment-success");
-
-    const oldUser = JSON.parse(localStorage.getItem("buddyUser") || "{}");
-
-    localStorage.setItem(
-      "buddyUser",
-      JSON.stringify({
-        ...oldUser,
-        subscriptionStatus: res.data.subscriptionStatus,
-      })
-    );
-
-    navigate("/workouts");
+  const proceedToPay = () => {
+    navigate(`/razorpay/${program}`);
   };
 
   return (
-    <div className="auth-page">
-      <div className="payment-card">
-        <p className="eyebrow">Selected Plan</p>
-        <h1>{programNames[program]}</h1>
+    <div className="premium-payment-page">
+      <div className="payment-hero-premium">
+        <Crown size={36} />
+        <p>Buddy Premium</p>
+        <h1>{selectedPlan.title}</h1>
+        <span>{selectedPlan.description}</span>
+      </div>
 
-        <div className="price-box">
-          <h2>3 Days Free Trial</h2>
-          <p>Start now. Upgrade after trial.</p>
+      <div className="premium-price-card">
+        <Dumbbell size={30} />
+        <h2>{selectedPlan.price}</h2>
+        <p>One-time dummy payment for testing.</p>
+
+        <div className="premium-benefits">
+          {selectedPlan.benefits.map((benefit) => (
+            <div key={benefit}>
+              <CheckCircle size={18} />
+              <span>{benefit}</span>
+            </div>
+          ))}
         </div>
 
-        <div className="payment-benefits">
-          <p>✓ Workout section</p>
-          <p>✓ Diet section</p>
-          <p>✓ BMI calculator</p>
-          <p>✓ Weight tracking chart</p>
-          <p>✓ Trainer-assigned plans</p>
-        </div>
-
-        <button onClick={startTrial}>Start 3-Day Free Trial</button>
-
-        <button className="secondary-btn" onClick={mockPayment}>
-          Mock Payment Success
-        </button>
-
-        <p className="small-note">
-          Real payment gateway can be connected after this version works.
-        </p>
+        <button onClick={proceedToPay}>Proceed to Pay</button>
       </div>
     </div>
   );

@@ -22,6 +22,9 @@ import FooterNav from "./components/FooterNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
+import HomeWorkoutSetup from "./pages/HomeWorkoutSetup";
+import DummyRazorpay from "./pages/DummyRazorpay";
+
 function UserLayout({ children }) {
   return (
     <div className="mobile-shell">
@@ -52,6 +55,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        
+        <Route path="/home-workout-setup" element={<HomeWorkoutSetup />} />
+
+<Route path="/razorpay/:program" element={<DummyRazorpay />} />
 
         <Route path="/payment/:program" element={<Payment />} />
 

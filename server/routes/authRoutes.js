@@ -13,9 +13,35 @@ const createToken = (userId) => {
   });
 };
 
+function parseRequestBody(body) {
+  if (!body) return {};
+
+  if (body.email && body.password) {
+    return body;
+  }
+
+  if (body.type === "Buffer" && Array.isArray(body.data)) {
+    const jsonString = Buffer.from(body.data).toString("utf8");
+    return JSON.parse(jsonString);
+  }
+
+  if (Buffer.isBuffer(body)) {
+    const jsonString = body.toString("utf8");
+    return JSON.parse(jsonString);
+  }
+
+  if (typeof body === "string") {
+    return JSON.parse(body);
+  }
+
+  return body;
+}
+
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+const parsedBody = parseRequestBody(req.body);
+
+const { name, email, password } = parsedBody; 
 const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({ email: normalizedEmail });
@@ -53,8 +79,10 @@ router.post("/login", async (req, res) => {
   try {
     console.log("LOGIN BODY:", req.body);
 
-    const email = req.body?.email;
-    const password = req.body?.password;
+const parsedBody = parseRequestBody(req.body);
+
+const email = parsedBody?.email;
+const password = parsedBody?.password;
 
     if (!email || !password) {
       return res.status(400).json({

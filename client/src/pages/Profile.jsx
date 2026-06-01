@@ -100,11 +100,6 @@ function Profile() {
         "Yes. Once real payments are connected, cancellation options can be added from the payment provider dashboard or inside the app.",
     },
   ];
-
-  if (!profile) {
-    return <p className="muted">Loading profile...</p>;
-  }
-
   useEffect(() => {
   const dismissed = localStorage.getItem("buddyInstallDismissed");
 
@@ -116,6 +111,11 @@ function Profile() {
       setShowInstallModal(true);
     }
   };
+
+  if (!profile) {
+    return <p className="muted">Loading profile...</p>;
+  }
+
 
   window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 

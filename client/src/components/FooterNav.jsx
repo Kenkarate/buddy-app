@@ -20,7 +20,7 @@ function FooterNav() {
       </NavLink>
 
       <NavLink to="/Store">
-        <TrendingUp size={25} />
+        <ShoppingBag size={25} />
         <span>Store</span>
       </NavLink>
 

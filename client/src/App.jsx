@@ -32,27 +32,40 @@ import ComingSoon from "./pages/ComingSoon";
 import Store from "./pages/Store";
 import ProductDetail from "./pages/ProductDetail";
 
+import { useState } from "react";
+import { Share2 } from "lucide-react";
+import ShareModal from "./components/ShareModal";
+
 function UserLayout({ children }) {
+  const [shareOpen, setShareOpen] = useState(false);
+
   return (
     <div className="mobile-shell">
       <main className="page-content">
-        {window.location.pathname !== "/profile" && (
-  <div className="elite-topbar">
-    <div className="elite-brand">
-      <div className="elite-avatar" />
-      <span>Buddy</span>
-    </div>
+        <div className="app-topbar centered-logo-topbar">
+          <div className="topbar-spacer" />
 
-    <div className="elite-bell">
-      <Dumbbell size={22} />
-    </div>
-  </div>
-)}
+          <img
+            src="/icons/logo.jpeg"
+            alt="Buddy Logo"
+            className="center-app-logo"
+          />
+
+          <button
+            className="top-share-btn"
+            onClick={() => setShareOpen(true)}
+            aria-label="Share Buddy"
+          >
+            <Share2 size={22} />
+          </button>
+        </div>
 
         {children}
       </main>
 
       <FooterNav />
+
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }

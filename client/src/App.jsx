@@ -29,6 +29,9 @@ import WorkoutList from "./pages/WorkoutList";
 import WorkoutDetail from "./pages/WorkoutDetail";
 import ComingSoon from "./pages/ComingSoon";
 
+import Store from "./pages/Store";
+import ProductDetail from "./pages/ProductDetail";
+
 function UserLayout({ children }) {
   return (
     <div className="mobile-shell">
@@ -74,6 +77,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+
         
 
         <Route
@@ -158,6 +162,27 @@ function App() {
     <ProtectedRoute>
       <UserLayout>
         <WorkoutDetail />
+      </UserLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/store"
+  element={
+    <ProtectedRoute>
+      <UserLayout>
+        <Store />
+      </UserLayout>
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/product/:id"
+  element={
+    <ProtectedRoute>
+      <UserLayout>
+        <ProductDetail />
       </UserLayout>
     </ProtectedRoute>
   }

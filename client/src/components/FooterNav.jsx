@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Dumbbell, Utensils, TrendingUp, User } from "lucide-react";
+import { Home, Dumbbell, Utensils, ShoppingBag, User } from "lucide-react";
 
 function FooterNav() {
   return (
@@ -19,9 +19,9 @@ function FooterNav() {
         <span>Food</span>
       </NavLink>
 
-      <NavLink to="/weight">
+      <NavLink to="/Store">
         <TrendingUp size={25} />
-        <span>Track</span>
+        <span>Store</span>
       </NavLink>
 
       <NavLink to="/profile">

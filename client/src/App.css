@@ -784,7 +784,7 @@ button {
 }
 
 .page-content {
-  padding: 34px 24px 105px;
+  padding: 0px 24px 105px;
   background: radial-gradient(circle at bottom, rgba(196, 255, 77, 0.07), transparent 22%),
     var(--elite-bg);
 }
@@ -3303,8 +3303,8 @@ button {
 
 .center-app-logo {
   justify-self: center;
-  width: 74px;
-  height: 74px;
+  width: 292px;
+  height: 174px;
   object-fit: contain;
   border-radius: 20px;
 }

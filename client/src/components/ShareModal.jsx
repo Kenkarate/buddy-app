@@ -1,12 +1,5 @@
 import { QRCodeCanvas } from "qrcode.react";
-import {
-  Copy,
-  Facebook,
-  MessageCircle,
-  Send,
-  Share2,
-  X,
-} from "lucide-react";
+import { Copy, MessageCircle, Send, Share2, X } from "lucide-react";
 
 function ShareModal({ open, onClose }) {
   if (!open) return null;
@@ -87,9 +80,9 @@ function ShareModal({ open, onClose }) {
           </a>
 
           <a href={facebookUrl} target="_blank" rel="noreferrer">
-            <Facebook size={24} />
-            <span>Facebook</span>
-          </a>
+  <span className="facebook-letter">f</span>
+  <span>Facebook</span>
+</a>
 
           <button onClick={shareNative}>
             <Share2 size={24} />

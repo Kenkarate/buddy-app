@@ -3445,3 +3445,17 @@ button {
   color: var(--elite-muted);
   font-weight: 800;
 }
+
+.facebook-letter {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--elite-lime);
+  color: #111 !important;
+  display: grid;
+  place-items: center;
+  font-size: 18px !important;
+  font-weight: 950 !important;
+  font-family: Arial, sans-serif;
+  line-height: 1;
+}

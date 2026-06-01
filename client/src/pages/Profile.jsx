@@ -34,10 +34,33 @@ function Profile() {
     message: "",
   });
 
-  const loadProfile = async () => {
+  const storedUser = JSON.parse(localStorage.getItem("buddyUser") || "{}");
+const userEmail = profile?.email || storedUser?.email || "";
+const userName = profile?.name || storedUser?.name || "Buddy User";
+const membershipTier =
+  profile?.subscriptionStatus === "paid"
+    ? "Premium"
+    : profile?.subscriptionStatus === "trial"
+    ? "Trial"
+    : "Basic";
+
+const loadProfile = async () => {
+  try {
     const res = await api.get("/auth/profile");
     setProfile(res.data);
-  };
+  } catch (error) {
+    console.error("Failed to load profile:", error);
+
+    const savedUser = JSON.parse(localStorage.getItem("buddyUser") || "{}");
+
+    if (savedUser?.email) {
+      setProfile(savedUser);
+      return;
+    }
+
+    navigate("/login");
+  }
+};
 
   useEffect(() => {
     loadProfile();
@@ -162,18 +185,12 @@ const dismissInstallModal = () => {
       <section className="elite-profile-card">
         <div className="profile-info-block">
           <p>Email</p>
-          <h2>{profile.email}</h2>
+          <h2>{userEmail}</h2>
         </div>
 
         <div className="profile-info-block">
           <p>Membership Tier</p>
-          <span className="membership-pill">
-            {profile.subscriptionStatus === "paid"
-              ? "Premium"
-              : profile.subscriptionStatus === "trial"
-              ? "Trial"
-              : "Basic"}
-          </span>
+        <span className="membership-pill">{membershipTier}</span>
         </div>
 
         <div className="profile-info-block">
@@ -225,7 +242,7 @@ const dismissInstallModal = () => {
             <span>Your Email</span>
             <div className="readonly-input">
               <Mail size={22} />
-              {profile.email}
+              {userEmail}
             </div>
           </label>
 
@@ -311,7 +328,7 @@ const dismissInstallModal = () => {
         <form className="elite-form-card" onSubmit={submitTrainerRequest}>
           <label>
             <span>Your Email</span>
-            <div className="readonly-input">{profile.email}</div>
+            <div className="readonly-input">{userEmail}</div>
           </label>
 
           <label>

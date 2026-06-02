@@ -94,14 +94,18 @@ function UserWorkout() {
         </div>
       </section>
 
-      <div className="daily-timer-card">
-        <p>Daily Workout Timer</p>
-        <h2>{timeLeft || "Loading..."}</h2>
-        <span>
-          Fixed until:{" "}
-          {timer?.expiresAt ? new Date(timer.expiresAt).toLocaleString() : "Loading"}
-        </span>
-      </div>
+      <button
+        className="daily-workout-main-card"
+        onClick={() => navigate("/daily-workout")}
+      >
+        <div>
+          <p>Daily Workout</p>
+          <h2>{timeLeft || "Loading..."}</h2>
+          <span>Tap to view today’s workout</span>
+        </div>
+
+        <strong>Open</strong>
+      </button>
 
       <div className="normal-part-grid">
         {normalWorkoutParts.map((item) => (

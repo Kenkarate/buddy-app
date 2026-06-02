@@ -1,0 +1,37 @@
+export const todayWorkout = {
+  title: "Today's Workout",
+  subtitle: "Trainer assigned daily session",
+  date: "Today",
+  workouts: [
+    {
+      id: "push-ups",
+      name: "Push Ups",
+      bodyPart: "Chest",
+      sets: 4,
+      reps: "12 reps",
+      rest: 45,
+      gif: "https://media.giphy.com/media/5t9IcXiBCyw60XPpGu/giphy.gif",
+      notes: "Keep your body straight and control the movement.",
+    },
+    {
+      id: "squats",
+      name: "Squats",
+      bodyPart: "Legs",
+      sets: 4,
+      reps: "15 reps",
+      rest: 60,
+      gif: "https://media.giphy.com/media/l0MYwONBGDS7aPGOk/giphy.gif",
+      notes: "Keep chest up and push hips back.",
+    },
+    {
+      id: "plank",
+      name: "Plank",
+      bodyPart: "Core",
+      sets: 3,
+      reps: "45 sec",
+      rest: 45,
+      gif: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+      notes: "Keep your core tight. Do not drop your hips.",
+    },
+  ],
+};

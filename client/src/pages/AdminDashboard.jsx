@@ -15,10 +15,98 @@ import api from "../api/api";
 
 function AdminDashboard() {
   const navigate = useNavigate();
-
+  
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState("");
   const [timerHours, setTimerHours] = useState(24);
+  
+  const [dailyWorkouts, setDailyWorkouts] = useState(() => {
+    return JSON.parse(localStorage.getItem("buddyAdminDailyWorkouts") || "[]");
+  });
+  
+  const [editingWorkoutId, setEditingWorkoutId] = useState(null);
+  
+  const [dailyWorkoutForm, setDailyWorkoutForm] = useState({
+    name: "",
+    bodyPart: "",
+    sets: "",
+    reps: "",
+    rest: "",
+    gif: "",
+    notes: "",
+  });
+  
+  const saveDailyWorkouts = (items) => {
+    setDailyWorkouts(items);
+    localStorage.setItem("buddyAdminDailyWorkouts", JSON.stringify(items));
+  };
+  
+  const resetDailyWorkoutForm = () => {
+    setEditingWorkoutId(null);
+    setDailyWorkoutForm({
+      name: "",
+      bodyPart: "",
+      sets: "",
+      reps: "",
+      rest: "",
+      gif: "",
+      notes: "",
+    });
+  };
+  
+  // const [dailyScheduleForm, setDailyScheduleForm] = useState({hours: 24});
+const submitDailyWorkout = (e) => {
+  e.preventDefault();
+
+  if (editingWorkoutId) {
+    const updated = dailyWorkouts.map((item) =>
+      item.id === editingWorkoutId
+        ? {
+            ...item,
+            ...dailyWorkoutForm,
+            sets: Number(dailyWorkoutForm.sets),
+            rest: Number(dailyWorkoutForm.rest),
+          }
+        : item
+    );
+
+    saveDailyWorkouts(updated);
+    resetDailyWorkoutForm();
+    return;
+  }
+
+  const newWorkout = {
+    id: Date.now().toString(),
+    ...dailyWorkoutForm,
+    sets: Number(dailyWorkoutForm.sets),
+    rest: Number(dailyWorkoutForm.rest),
+  };
+
+  saveDailyWorkouts([newWorkout, ...dailyWorkouts]);
+  resetDailyWorkoutForm();
+};
+
+const editDailyWorkout = (workout) => {
+  setEditingWorkoutId(workout.id);
+  setDailyWorkoutForm({
+    name: workout.name,
+    bodyPart: workout.bodyPart,
+    sets: workout.sets,
+    reps: workout.reps,
+    rest: workout.rest,
+    gif: workout.gif,
+    notes: workout.notes,
+  });
+};
+
+const deleteDailyWorkout = (id) => {
+  const confirmed = window.confirm("Delete this daily workout?");
+
+  if (!confirmed) return;
+
+  const updated = dailyWorkouts.filter((item) => item.id !== id);
+  saveDailyWorkouts(updated);
+};
 
   const [dailyScheduleForm, setDailyScheduleForm] = useState({
   currentWorkoutSlug: "mixed-workout",
@@ -140,6 +228,28 @@ useEffect(() => {
   };
 
   const selectedClient = clients.find((client) => client._id === selectedClientId);
+  const updateDailyTimer = async (e) => {
+  if (e) e.preventDefault();
+
+  try {
+    const hours = Number(dailyScheduleForm?.hours || timerHours || 24);
+
+    const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+
+    localStorage.setItem(
+      "buddyDailyWorkoutTimer",
+      JSON.stringify({
+        hours,
+        expiresAt: expiresAt.toISOString(),
+      })
+    );
+
+    alert("Daily workout timer updated");
+  } catch (error) {
+    console.error("Failed to update daily timer:", error);
+    alert("Failed to update daily timer");
+  }
+};
 
   return (
     <div className="admin-app-shell">
@@ -329,14 +439,16 @@ useEffect(() => {
   <h2>Daily Workout Timer</h2>
   <p>Set today’s active workout and countdown time for all users.</p>
 
-  <form onSubmit={updateDailyTimer}>
+    <form className="admin-daily-form" onSubmit={updateDailyTimer}>
     <input
-      placeholder="Current workout slug"
-      value={dailyScheduleForm.currentWorkoutSlug}
+      type="number"
+      min="1"
+      placeholder="Timer hours"
+      value={dailyScheduleForm.hours}
       onChange={(e) =>
         setDailyScheduleForm({
           ...dailyScheduleForm,
-          currentWorkoutSlug: e.target.value,
+          hours: e.target.value,
         })
       }
       required
@@ -544,6 +656,118 @@ useEffect(() => {
           Logout
         </button>
       </main>
+
+      <section className="admin-daily-manager">
+  <div className="admin-section-heading">
+    <div>
+      <p>Daily Training</p>
+      <h2>Daily Workout Manager</h2>
+    </div>
+  </div>
+
+  <form className="admin-daily-form" onSubmit={submitDailyWorkout}>
+    <input
+      placeholder="Workout name"
+      value={dailyWorkoutForm.name}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, name: e.target.value })
+      }
+      required
+    />
+
+    <input
+      placeholder="Body part"
+      value={dailyWorkoutForm.bodyPart}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, bodyPart: e.target.value })
+      }
+      required
+    />
+
+    <input
+      type="number"
+      placeholder="Sets"
+      value={dailyWorkoutForm.sets}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, sets: e.target.value })
+      }
+      required
+    />
+
+    <input
+      placeholder="Reps e.g. 12 reps"
+      value={dailyWorkoutForm.reps}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, reps: e.target.value })
+      }
+      required
+    />
+
+    <input
+      type="number"
+      placeholder="Rest seconds"
+      value={dailyWorkoutForm.rest}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, rest: e.target.value })
+      }
+      required
+    />
+
+    <input
+      placeholder="GIF URL"
+      value={dailyWorkoutForm.gif}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, gif: e.target.value })
+      }
+    />
+
+    <textarea
+      placeholder="Notes / instructions"
+      value={dailyWorkoutForm.notes}
+      onChange={(e) =>
+        setDailyWorkoutForm({ ...dailyWorkoutForm, notes: e.target.value })
+      }
+    />
+
+    <div className="admin-form-actions">
+      <button type="submit">
+        {editingWorkoutId ? "Update Workout" : "Add Workout"}
+      </button>
+
+      {editingWorkoutId && (
+        <button type="button" onClick={resetDailyWorkoutForm}>
+          Cancel Edit
+        </button>
+      )}
+    </div>
+  </form>
+
+  <div className="admin-daily-list">
+    {dailyWorkouts.length === 0 && (
+      <div className="admin-empty-state">
+        <h3>No daily workouts added</h3>
+        <p>Add today’s workout using the form above.</p>
+      </div>
+    )}
+
+    {dailyWorkouts.map((workout) => (
+      <div className="admin-daily-item" key={workout.id}>
+        <div>
+          <p>{workout.bodyPart}</p>
+          <h3>{workout.name}</h3>
+          <span>
+            {workout.sets} sets · {workout.reps} · {workout.rest}s rest
+          </span>
+        </div>
+
+        <div className="admin-item-actions">
+          <button onClick={() => editDailyWorkout(workout)}>Edit</button>
+          <button onClick={() => deleteDailyWorkout(workout.id)}>Delete</button>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
 
       <nav className="admin-bottom-nav">
         <button className="active">

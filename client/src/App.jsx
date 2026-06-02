@@ -35,6 +35,7 @@ import ProductDetail from "./pages/ProductDetail";
 import { useState } from "react";
 import { Share2 } from "lucide-react";
 import ShareModal from "./components/ShareModal";
+import DailyWorkout from "./pages/DailyWorkout";
 
 function UserLayout({ children }) {
   const [shareOpen, setShareOpen] = useState(false);
@@ -91,7 +92,16 @@ function App() {
 
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        
+        <Route
+  path="/daily-workout"
+  element={
+    <ProtectedRoute>
+      <UserLayout>
+        <DailyWorkout />
+      </UserLayout>
+    </ProtectedRoute>
+  }
+/>
 
         <Route
           path="/workouts"

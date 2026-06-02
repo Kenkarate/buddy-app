@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Play, Pause, RotateCcw, Timer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { todayWorkout } from "../data/dailyWorkoutData";
+import { dailyWorkoutCycles } from "../data/dailyWorkoutData";
 
 function DailyWorkout() {
   const navigate = useNavigate();
@@ -36,6 +36,16 @@ function DailyWorkout() {
 
     return () => clearInterval(interval);
   }, [running, secondsLeft]);
+
+  const getTodayWorkout = () => {
+  const baseDate = new Date("2026-06-01T00:00:00").getTime();
+  const now = Date.now();
+  const dayIndex = Math.floor((now - baseDate) / (24 * 60 * 60 * 1000));
+
+  return dailyWorkoutCycles[dayIndex % dailyWorkoutCycles.length];
+};
+
+const todayWorkout = getTodayWorkout();
 
   return (
     <div className="daily-workout-page">

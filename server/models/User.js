@@ -67,6 +67,12 @@ const userSchema = new mongoose.Schema(
       enum: ["none", "trial", "paid", "expired"],
       default: "none",
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
 
     trialStartedAt: Date,
 

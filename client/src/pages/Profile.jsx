@@ -67,10 +67,13 @@ const loadProfile = async () => {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("buddyToken");
-    localStorage.removeItem("buddyUser");
-    navigate("/");
-  };
+  localStorage.removeItem("buddyToken");
+  localStorage.removeItem("buddyUser");
+  localStorage.removeItem("buddySelectedProgram");
+  localStorage.removeItem("buddyPaymentStatus");
+
+  navigate("/", { replace: true });
+};
 
   const submitQuery = (e) => {
     e.preventDefault();
@@ -398,9 +401,7 @@ const dismissInstallModal = () => {
         Upgrade to Premium
       </button>
 
-      <button className="elite-signout-btn" onClick={logout}>
-        Sign Out
-      </button>
+     <button onClick={logout}>Sign Out</button>
       {showInstallModal && (
   <div className="install-app-modal">
     <div className="install-app-card">

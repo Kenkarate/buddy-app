@@ -24,18 +24,24 @@ function UserWorkout() {
   };
 
   const calculateTimeLeft = (schedule) => {
-    if (!schedule?.expiresAt) return "";
+  if (!schedule?.startsAt) return "";
 
-    const difference = new Date(schedule.expiresAt).getTime() - Date.now();
+  const startTime = new Date(schedule.startsAt).getTime();
+  const duration = 24 * 60 * 60 * 1000;
+  const now = Date.now();
 
-    if (difference <= 0) return "Expired";
+  const elapsed = now - startTime;
+  const cyclesPassed = Math.floor(elapsed / duration);
+  const nextExpiry = startTime + (cyclesPassed + 1) * duration;
 
-    const hours = Math.floor(difference / (1000 * 60 * 60));
-    const minutes = Math.floor((difference / (1000 * 60)) % 60);
-    const seconds = Math.floor((difference / 1000) % 60);
+  const difference = nextExpiry - now;
 
-    return `${hours}h ${minutes}m ${seconds}s`;
-  };
+  const hours = Math.floor(difference / (1000 * 60 * 60));
+  const minutes = Math.floor((difference / (1000 * 60)) % 60);
+  const seconds = Math.floor((difference / 1000) % 60);
+
+  return `${hours}h ${minutes}m ${seconds}s`;
+};
 
   useEffect(() => {
     loadTimer();

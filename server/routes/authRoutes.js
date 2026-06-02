@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/User");
 const protect = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
 const createToken = (userId) => {
@@ -152,50 +151,88 @@ router.put("/profile", protect, async (req, res) => {
 });
 
 router.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
+  try {
+    let body = req.body;
 
-  const user = await User.findOne({ email });
+    if (body?.type === "Buffer" && Array.isArray(body.data)) {
+      body = JSON.parse(Buffer.from(body.data).toString("utf8"));
+    }
 
-  if (!user) {
-    return res.json({
-      message: "If this email exists, a reset link will be generated.",
+    const email = body?.email?.trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "No account found with this email" });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    const frontendUrl =
+      process.env.FRONTEND_URL || "https://curious-vacherin-a5e583.netlify.app";
+
+    const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
+
+    res.json({
+      message: "Password reset link created. This link expires in 15 minutes.",
+      resetLink,
     });
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+    res.status(500).json({ message: error.message || "Forgot password failed" });
   }
-
-  const resetToken = crypto.randomBytes(32).toString("hex");
-
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = Date.now() + 1000 * 60 * 15;
-
-  await user.save();
-
-  console.log("Password reset link:");
-  console.log(`http://localhost:5173/reset-password/${resetToken}`);
-
-  res.json({
-    message: "Reset link generated. Check backend terminal.",
-  });
 });
 
 router.post("/reset-password/:token", async (req, res) => {
-  const { password } = req.body;
+  try {
+    let body = req.body;
 
-  const user = await User.findOne({
-    resetPasswordToken: req.params.token,
-    resetPasswordExpires: { $gt: Date.now() },
-  });
+    if (body?.type === "Buffer" && Array.isArray(body.data)) {
+      body = JSON.parse(Buffer.from(body.data).toString("utf8"));
+    }
 
-  if (!user) {
-    return res.status(400).json({ message: "Invalid or expired reset link" });
+    const { token } = req.params;
+    const { password } = body;
+
+    if (!password) {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Reset link is invalid or expired",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.json({
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    res.status(500).json({ message: error.message || "Reset password failed" });
   }
-
-  user.password = await bcrypt.hash(password, 10);
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
-
-  await user.save();
-
-  res.json({ message: "Password updated successfully" });
 });
 
 module.exports = router;

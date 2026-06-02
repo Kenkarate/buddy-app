@@ -25,6 +25,12 @@ function AdminDashboard() {
   });
   
   const [editingWorkoutId, setEditingWorkoutId] = useState(null);
+  const [settings, setSettings] = useState({
+  trialDays: 0,
+  freeWorkoutLimit: 0,
+  defaultCurrency: "INR",
+  adminNotifyBeforeWorkoutExpiryHours: 6,
+});
   
   const [dailyWorkoutForm, setDailyWorkoutForm] = useState({
     name: "",
@@ -248,6 +254,26 @@ useEffect(() => {
   } catch (error) {
     console.error("Failed to update daily timer:", error);
     alert("Failed to update daily timer");
+  }
+};
+
+const loadSettings = async () => {
+  try {
+    const savedSettings = localStorage.getItem("buddyAdminSettings");
+
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings));
+      return;
+    }
+
+    setSettings({
+      trialDays: 0,
+      freeWorkoutLimit: 0,
+      defaultCurrency: "INR",
+      adminNotifyBeforeWorkoutExpiryHours: 6,
+    });
+  } catch (error) {
+    console.error("Failed to load settings:", error);
   }
 };
 

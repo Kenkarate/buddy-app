@@ -10,34 +10,36 @@ function DummyRazorpay() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const normalizedProgram = String(program || "").toLowerCase();
+  const normalizedProgram = String(program || "")
+    .trim()
+    .toLowerCase();
 
   const planDetails = {
     normal: {
       title: "Normal Workout",
-      displayAmount: "₹80",
+      amount: "₹80",
     },
     "normal-workout": {
       title: "Normal Workout",
-      displayAmount: "₹80",
+      amount: "₹80",
     },
     "normal-workouts": {
       title: "Normal Workout",
-      displayAmount: "₹80",
+      amount: "₹80",
     },
     home: {
       title: "Home Workout",
-      displayAmount: "₹150",
+      amount: "₹150",
     },
     "home-workout": {
       title: "Home Workout",
-      displayAmount: "₹150",
+      amount: "₹150",
     },
   };
 
   const selectedPlan = planDetails[normalizedProgram] || {
-    title: "Workout Plan",
-    displayAmount: "₹80",
+    title: "Normal Workout",
+    amount: "₹80",
   };
 
   const startPayment = async () => {
@@ -45,6 +47,8 @@ function DummyRazorpay() {
     setError("");
 
     try {
+      console.log("Sending program:", normalizedProgram);
+
       const orderRes = await api.post("/payments/create-order", {
         program: normalizedProgram,
       });
@@ -79,7 +83,8 @@ function DummyRazorpay() {
 
             if (
               normalizedProgram === "home" ||
-              normalizedProgram === "home-workout"
+              normalizedProgram === "home-workout" ||
+              normalizedProgram === "home-workouts"
             ) {
               navigate("/home-workout-setup");
               return;
@@ -99,7 +104,11 @@ function DummyRazorpay() {
       razorpay.open();
     } catch (err) {
       console.error("Payment error:", err);
-      setError(err.response?.data?.message || "Payment failed");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.normalizedProgram ||
+          "Payment failed"
+      );
       setLoading(false);
     }
   };
@@ -121,7 +130,7 @@ function DummyRazorpay() {
 
         <div className="razorpay-summary">
           <span>Amount</span>
-          <strong>{selectedPlan.displayAmount}</strong>
+          <strong>{selectedPlan.amount}</strong>
         </div>
 
         <div className="secure-row">

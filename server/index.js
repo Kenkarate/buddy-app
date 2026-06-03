@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const userDataRoutes = require("./routes/userDataRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const settingsRoutes = require("./routes/settingsRoutes");
 
@@ -21,6 +22,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   process.env.CLIENT_URL,
 ];
+
+app.use("/api/payments", paymentRoutes);
 
 app.use(
   cors({

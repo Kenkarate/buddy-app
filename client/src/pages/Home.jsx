@@ -11,7 +11,7 @@ function Home() {
     return;
   }
 
-  navigate(`/payment/${program}`);
+  navigate(`/razorpay/${program}`);
 };
 
   return (

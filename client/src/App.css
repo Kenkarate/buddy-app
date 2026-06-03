@@ -3845,3 +3845,25 @@ button {
   color: #9ca3af;
   margin: 0;
 }
+.razorpay-box h1 {
+  color: #111 !important;
+  opacity: 1 !important;
+}
+
+.razorpay-box p {
+  color: #6b7280 !important;
+}
+
+.razorpay-summary span {
+  color: #111 !important;
+}
+
+.razorpay-summary strong {
+  color: #111 !important;
+}
+
+.razorpay-cancel-btn {
+  background: #151a14 !important;
+  color: var(--elite-lime) !important;
+  margin-top: 12px;
+}

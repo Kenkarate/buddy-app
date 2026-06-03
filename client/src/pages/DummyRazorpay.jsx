@@ -6,15 +6,39 @@ import api from "../api/api";
 function DummyRazorpay() {
   const navigate = useNavigate();
   const { program } = useParams();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const planName =
-    program === "normal-workouts"
-      ? "Normal Workout"
-      : program === "home-workout"
-      ? "Home Workout"
-      : "Personal Training";
+  const normalizedProgram = String(program || "").toLowerCase();
+
+  const planDetails = {
+    normal: {
+      title: "Normal Workout",
+      displayAmount: "₹80",
+    },
+    "normal-workout": {
+      title: "Normal Workout",
+      displayAmount: "₹80",
+    },
+    "normal-workouts": {
+      title: "Normal Workout",
+      displayAmount: "₹80",
+    },
+    home: {
+      title: "Home Workout",
+      displayAmount: "₹150",
+    },
+    "home-workout": {
+      title: "Home Workout",
+      displayAmount: "₹150",
+    },
+  };
+
+  const selectedPlan = planDetails[normalizedProgram] || {
+    title: "Workout Plan",
+    displayAmount: "₹80",
+  };
 
   const startPayment = async () => {
     setLoading(true);
@@ -22,7 +46,7 @@ function DummyRazorpay() {
 
     try {
       const orderRes = await api.post("/payments/create-order", {
-        program,
+        program: normalizedProgram,
       });
 
       const { orderId, amount, currency, keyId, planTitle } = orderRes.data;
@@ -46,14 +70,17 @@ function DummyRazorpay() {
         handler: async function (response) {
           const verifyRes = await api.post("/payments/verify", {
             ...response,
-            program,
+            program: normalizedProgram,
           });
 
           if (verifyRes.data.success) {
-            localStorage.setItem("buddySelectedProgram", program);
+            localStorage.setItem("buddySelectedProgram", normalizedProgram);
             localStorage.setItem("buddyPaymentStatus", "paid");
 
-            if (program === "home-workout") {
+            if (
+              normalizedProgram === "home" ||
+              normalizedProgram === "home-workout"
+            ) {
               navigate("/home-workout-setup");
               return;
             }
@@ -85,11 +112,16 @@ function DummyRazorpay() {
         </div>
 
         <h1>Razorpay Checkout</h1>
-        <p>Complete payment to unlock {planName}.</p>
+        <p>Complete payment to unlock {selectedPlan.title}.</p>
 
         <div className="razorpay-summary">
           <span>Plan</span>
-          <strong>{planName}</strong>
+          <strong>{selectedPlan.title}</strong>
+        </div>
+
+        <div className="razorpay-summary">
+          <span>Amount</span>
+          <strong>{selectedPlan.displayAmount}</strong>
         </div>
 
         <div className="secure-row">
@@ -103,7 +135,7 @@ function DummyRazorpay() {
           {loading ? "Opening Razorpay..." : "Proceed to Pay"}
         </button>
 
-        <button className="edit-bmi-btn" onClick={() => navigate("/")}>
+        <button className="razorpay-cancel-btn" onClick={() => navigate("/")}>
           Cancel
         </button>
       </div>

@@ -1,11 +1,5 @@
 import { NavLink } from "react-router-dom";
-import {
-  Home,
-  Calculator,
-  Utensils,
-  ShoppingBag,
-  User,
-} from "lucide-react";
+import { Home, Calculator, Utensils, ShoppingBag, User } from "lucide-react";
 
 const navItems = [
   {

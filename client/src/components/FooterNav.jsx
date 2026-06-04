@@ -1,33 +1,55 @@
 import { NavLink } from "react-router-dom";
-import { Home, Dumbbell, Utensils, ShoppingBag, User } from "lucide-react";
+import {
+  Home,
+  Calculator,
+  Utensils,
+  ShoppingBag,
+  User,
+} from "lucide-react";
+
+const navItems = [
+  {
+    path: "/workouts",
+    label: "Home",
+    Icon: Home,
+  },
+  {
+    path: "/bmi",
+    label: "BMI",
+    Icon: Calculator,
+  },
+  {
+    path: "/diet",
+    label: "Food",
+    Icon: Utensils,
+  },
+  {
+    path: "/store",
+    label: "Store",
+    Icon: ShoppingBag,
+  },
+  {
+    path: "/profile",
+    label: "Profile",
+    Icon: User,
+  },
+];
 
 function FooterNav() {
   return (
-    <nav className="elite-footer-nav five">
-      <NavLink to="/workouts">
-        <Home size={25} />
-        <span>Home</span>
-      </NavLink>
-
-      <NavLink to="/bmi">
-        <Dumbbell size={25} />
-        <span>BMI</span>
-      </NavLink>
-
-      <NavLink to="/diet">
-        <Utensils size={25} />
-        <span>Food</span>
-      </NavLink>
-
-      <NavLink to="/Store">
-        <ShoppingBag size={25} />
-        <span>Store</span>
-      </NavLink>
-
-      <NavLink to="/profile">
-        <User size={25} />
-        <span>Profile</span>
-      </NavLink>
+    <nav className="footer-nav">
+      {navItems.map(({ path, label, Icon }) => (
+        <NavLink
+          key={path}
+          to={path}
+          className={({ isActive }) =>
+            isActive ? "footer-nav-item active" : "footer-nav-item"
+          }
+        >
+          <Icon size={25} strokeWidth={2.2} />
+          <span>{label}</span>
+        </NavLink>
+      ))}
     </nav>
   );
 }

@@ -38,7 +38,7 @@ a {
 
 .mobile-shell {
   max-width: 430px;
-  margin: 0 auto;
+
   min-height: 100vh;
   background: linear-gradient(180deg, #171820 0%, #08090c 100%);
   position: relative;
@@ -3890,4 +3890,41 @@ button {
   background: #151a14 !important;
   color: var(--elite-lime) !important;
   margin-top: 12px;
+}
+.footer-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: 84px;
+  background: rgba(10, 13, 10, 0.96);
+  border-top: 1px solid rgba(234, 255, 184, 0.1);
+  border-radius: 28px 28px 0 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  z-index: 100;
+  padding: 10px 8px 8px;
+  backdrop-filter: blur(18px);
+}
+
+.footer-nav-item {
+  color: #6b7280;
+  text-decoration: none;
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.footer-nav-item svg {
+  color: currentColor;
+}
+
+.footer-nav-item.active {
+  color: var(--elite-lime);
 }

@@ -4,10 +4,17 @@ function Home() {
   const navigate = useNavigate();
 
  const chooseProgram = (program) => {
-  localStorage.setItem("buddySelectedProgram", program);
+  localStorage.setItem("buddyPendingProgram", program);
 
   if (program === "personal-training") {
     navigate("/coming-soon");
+    return;
+  }
+
+  const token = localStorage.getItem("buddyToken");
+
+  if (!token) {
+    navigate("/login");
     return;
   }
 

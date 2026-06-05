@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { GoogleLogin } from "@react-oauth/google";
 
 function Login() {
   const navigate = useNavigate();
@@ -27,7 +28,44 @@ function Login() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      navigate("/workouts");
+      const pendingProgram = localStorage.getItem("buddyPendingProgram");
+
+if (pendingProgram) {
+  navigate(`/razorpay/${pendingProgram}`);
+
+  const handleGoogleLogin = async (credentialResponse) => {
+  setError("");
+
+  try {
+    const res = await api.post("/auth/google", {
+      credential: credentialResponse.credential,
+    });
+
+    if (res.data.user.role === "admin") {
+      setError("Use trainer login for admin account.");
+      return;
+    }
+
+    localStorage.setItem("buddyToken", res.data.token);
+    localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
+
+    const pendingProgram = localStorage.getItem("buddyPendingProgram");
+
+    if (pendingProgram) {
+      navigate(`/razorpay/${pendingProgram}`);
+      return;
+    }
+
+    navigate("/workouts");
+  } catch (err) {
+    setError(err.response?.data?.message || "Google login failed");
+  }
+};
+
+  return;
+}
+
+navigate("/workouts");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }

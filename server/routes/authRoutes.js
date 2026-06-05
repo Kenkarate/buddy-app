@@ -5,12 +5,14 @@ const crypto = require("crypto");
 const User = require("../models/User");
 const protect = require("../middleware/authMiddleware");
 const router = express.Router();
+const { OAuth2Client } = require("google-auth-library");
 
 const createToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function parseRequestBody(body) {
   if (!body) return {};
@@ -232,6 +234,72 @@ router.post("/reset-password/:token", async (req, res) => {
   } catch (error) {
     console.error("RESET PASSWORD ERROR:", error);
     res.status(500).json({ message: error.message || "Reset password failed" });
+  }
+});
+
+router.post("/google", async (req, res) => {
+  try {
+    const parsedBody = parseRequestBody(req.body);
+    const { credential } = parsedBody;
+
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential is required" });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ message: "Google Client ID missing" });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    const googleId = payload.sub;
+    const email = payload.email?.trim().toLowerCase();
+    const name = payload.name || email;
+    const avatarUrl = payload.picture || "";
+
+    if (!email) {
+      return res.status(400).json({ message: "Google email missing" });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        password: `google-${googleId}`,
+        role: "user",
+        googleId,
+        avatarUrl,
+        authProvider: "google",
+      });
+    } else {
+      user.googleId = user.googleId || googleId;
+      user.avatarUrl = avatarUrl || user.avatarUrl;
+      user.authProvider = user.authProvider || "email";
+      await user.save();
+    }
+
+    res.json({
+      token: createToken(user._id),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        selectedProgram: user.selectedProgram,
+        subscriptionStatus: user.subscriptionStatus,
+        avatarUrl: user.avatarUrl,
+      },
+    });
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+    res.status(500).json({ message: "Google login failed" });
   }
 });
 

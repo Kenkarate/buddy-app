@@ -78,14 +78,14 @@ function DummyRazorpay() {
           });
 
           if (verifyRes.data.success) {
-            localStorage.setItem("buddySelectedProgram", normalizedProgram);
-            localStorage.setItem("buddyPaymentStatus", "paid");
+            const updatedUser = verifyRes.data.user;
 
-            if (
-              normalizedProgram === "home" ||
-              normalizedProgram === "home-workout" ||
-              normalizedProgram === "home-workouts"
-            ) {
+            localStorage.setItem("buddyUser", JSON.stringify(updatedUser));
+            localStorage.setItem("buddySelectedProgram", verifyRes.data.program);
+            localStorage.setItem("buddyPaymentStatus", "paid");
+            localStorage.removeItem("buddyPendingProgram");
+
+            if (verifyRes.data.program === "home-workout") {
               navigate("/home-workout-setup");
               return;
             }
@@ -106,8 +106,8 @@ function DummyRazorpay() {
       console.error("Payment error:", err);
       setError(
         err.response?.data?.message ||
-          err.response?.data?.normalizedProgram ||
-          "Payment failed"
+        err.response?.data?.normalizedProgram ||
+        "Payment failed"
       );
       setLoading(false);
     }

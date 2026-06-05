@@ -13,6 +13,38 @@ function UserWorkout() {
   const selectedProgram = localStorage.getItem("buddySelectedProgram");
   const paymentStatus = localStorage.getItem("buddyPaymentStatus");
   const homeWorkouts = JSON.parse(localStorage.getItem("buddyHomeWorkouts") || "[]");
+  const [profile, setProfile] = useState(null);
+
+
+
+  useEffect(() => {
+  const loadProfile = async () => {
+    try {
+      const res = await api.get("/auth/profile");
+      setProfile(res.data);
+    } catch (error) {
+      console.error("Failed to load profile:", error);
+    }
+  };
+
+  loadProfile();
+}, []);
+
+const dbProgram = profile?.selectedProgram;
+const dbSubscription = profile?.subscriptionStatus;
+
+if (
+  selectedProgram === "normal-workouts" &&
+  dbSubscription !== "paid" &&
+  paymentStatus !== "paid"
+) {
+  return (
+    <div className="elite-empty-card">
+      <h2>Payment Required</h2>
+      <p>Please complete payment to unlock normal workouts.</p>
+    </div>
+  );
+}
 
   const loadTimer = async () => {
     try {
@@ -90,6 +122,8 @@ function UserWorkout() {
       </div>
     );
   }
+
+  
 
   return (
     <div className="elite-workout-page">

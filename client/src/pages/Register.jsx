@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { GoogleLogin } from "@react-oauth/google";
+
 
 function Register() {
   const navigate = useNavigate();
@@ -30,20 +32,43 @@ function Register() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      const selectedProgram = localStorage.getItem("selectedProgram");
+      const pendingProgram = localStorage.getItem("buddyPendingProgram");
 
-      if (selectedProgram) {
-        await api.post("/subscription/start-trial", {
-          selectedProgram,
-        });
-
-        localStorage.removeItem("selectedProgram");
+      if (pendingProgram) {
+        navigate(`/razorpay/${pendingProgram}`);
+        return;
       }
+
+      navigate("/workouts");
 
       navigate("/workouts");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     }
+    const handleGoogleRegister = async (credentialResponse) => {
+      setError("");
+
+      try {
+        const res = await api.post("/auth/google", {
+          credential: credentialResponse.credential,
+        });
+
+        localStorage.setItem("buddyToken", res.data.token);
+        localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
+
+        const pendingProgram = localStorage.getItem("buddyPendingProgram");
+
+        if (pendingProgram) {
+          navigate(`/razorpay/${pendingProgram}`);
+          return;
+        }
+
+        navigate("/workouts");
+      } catch (err) {
+        setError(err.response?.data?.message || "Google signup failed");
+      }
+    };
+
   };
 
   return (
@@ -81,6 +106,12 @@ function Register() {
         {error && <p className="error">{error}</p>}
 
         <button>Create Account</button>
+        <div className="google-login-box">
+          <GoogleLogin
+            onSuccess={handleGoogleRegister}
+            onError={() => setError("Google signup failed")}
+          />
+        </div>
 
         <p className="center-text">
           Already registered? <Link to="/login">Login</Link>

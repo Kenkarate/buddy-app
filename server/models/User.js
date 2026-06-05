@@ -38,7 +38,19 @@ const bmiRecordSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema(
   {
     name: String,
+    googleId: {
+      type: String,
+    },
 
+    avatarUrl: {
+      type: String,
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["email", "google"],
+      default: "email",
+    },
     email: {
       type: String,
       required: true,
@@ -47,7 +59,6 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
     },
 
     role: {
@@ -63,9 +74,21 @@ const userSchema = new mongoose.Schema(
     },
 
     subscriptionStatus: {
-      type: String,
-      enum: ["none", "trial", "paid", "expired"],
-      default: "none",
+      subscriptionStartedAt: {
+        type: Date,
+      },
+
+      subscriptionExpiresAt: {
+        type: Date,
+      },
+
+      lastPayment: {
+        razorpayOrderId: String,
+        razorpayPaymentId: String,
+        razorpaySignature: String,
+        program: String,
+        paidAt: Date,
+      },
     },
     resetPasswordToken: {
       type: String,

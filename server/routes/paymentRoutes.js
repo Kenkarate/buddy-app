@@ -2,7 +2,7 @@ const express = require("express");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const protect = require("../middleware/authMiddleware");
-
+const User = require("../models/User");
 const router = express.Router();
 
 const planPrices = {
@@ -63,6 +63,45 @@ router.post("/create-order", protect, async (req, res) => {
       .toLowerCase();
 
     console.log("NORMALIZED PROGRAM:", normalizedProgram);
+
+    const selectedProgram = String(program || "")
+      .trim()
+      .toLowerCase();
+
+    let finalProgram = selectedProgram;
+
+    if (selectedProgram === "normal" || selectedProgram === "normal-workout") {
+      finalProgram = "normal-workouts";
+    }
+
+    if (selectedProgram === "home" || selectedProgram === "home-workouts") {
+      finalProgram = "home-workout";
+    }
+
+    const subscriptionStartedAt = new Date();
+
+    let subscriptionExpiresAt = new Date();
+    subscriptionExpiresAt.setMonth(subscriptionExpiresAt.getMonth() + 1);
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        selectedProgram: finalProgram,
+        subscriptionStatus: "paid",
+        subscriptionStartedAt,
+        subscriptionExpiresAt,
+        lastPayment: {
+          razorpayOrderId: razorpay_order_id,
+          razorpayPaymentId: razorpay_payment_id,
+          razorpaySignature: razorpay_signature,
+          program: finalProgram,
+          paidAt: new Date(),
+        },
+      },
+      {
+        new: true,
+      }
+    ).select("-password");
 
     const selectedPlan = planPrices[normalizedProgram];
 
@@ -144,7 +183,8 @@ router.post("/verify", protect, async (req, res) => {
     res.json({
       success: true,
       message: "Payment verified successfully",
-      program,
+      program: finalProgram,
+      user,
     });
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);

@@ -3928,3 +3928,8 @@ button {
 .footer-nav-item.active {
   color: var(--elite-lime);
 }
+.google-login-box {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}

@@ -22,20 +22,22 @@ function DailyWorkout() {
   };
 
   useEffect(() => {
-    let interval;
+  let interval;
 
-    if (running && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1);
-      }, 1000);
-    }
+  if (running && secondsLeft > 0) {
+    interval = setInterval(() => {
+      setSecondsLeft((prev) => prev - 1);
+    }, 1000);
+  }
 
-    if (secondsLeft === 0) {
-      setRunning(false);
-    }
+  if (secondsLeft === 0) {
+    setRunning(false);
+  }
 
-    return () => clearInterval(interval);
-  }, [running, secondsLeft]);
+  return () => {
+    if (interval) clearInterval(interval);
+  };
+}, [running, secondsLeft]);
 
   const getTodayWorkout = () => {
   const baseDate = new Date("2026-06-01T00:00:00").getTime();

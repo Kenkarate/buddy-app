@@ -63,8 +63,12 @@ const loadProfile = async () => {
 };
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+  const run = async () => {
+    await loadProfile();
+  };
+
+  run();
+}, []);
 
   const logout = () => {
   localStorage.removeItem("buddyToken");

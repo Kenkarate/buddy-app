@@ -130,6 +130,8 @@ const loadProfile = async () => {
         "Yes. Once real payments are connected, cancellation options can be added from the payment provider dashboard or inside the app.",
     },
   ];
+
+
   useEffect(() => {
   const dismissed = localStorage.getItem("buddyInstallDismissed");
 
@@ -142,17 +144,15 @@ const loadProfile = async () => {
     }
   };
 
-  if (!profile) {
-    return <p className="muted">Loading profile...</p>;
-  }
-
-
   window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
   return () => {
     window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   };
 }, []);
+
+
+
 const installApp = async () => {
   if (!installPrompt) {
     alert("Install option is not available yet. Use browser menu → Add to Home Screen.");
@@ -175,6 +175,10 @@ const dismissInstallModal = () => {
   setShowInstallModal(false);
   localStorage.setItem("buddyInstallDismissed", "true");
 };
+
+if (!profile && !userEmail) {
+  return <p className="muted">Loading profile...</p>;
+}
 
   return (
     <div className="elite-profile-page">

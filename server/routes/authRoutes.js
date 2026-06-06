@@ -154,22 +154,24 @@ router.put("/profile", protect, async (req, res) => {
 
 router.post("/forgot-password", async (req, res) => {
   try {
-    let body = req.body;
-
-    if (body?.type === "Buffer" && Array.isArray(body.data)) {
-      body = JSON.parse(Buffer.from(body.data).toString("utf8"));
-    }
+    const body = parseRequestBody(req.body);
 
     const email = body?.email?.trim().toLowerCase();
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(400).json({
+        message: "Email is required",
+        receivedBody: req.body,
+        parsedBody: body,
+      });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "No account found with this email" });
+      return res.status(400).json({
+        message: "No account found with this email",
+      });
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -184,29 +186,37 @@ router.post("/forgot-password", async (req, res) => {
 
     const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
-    res.json({
+    return res.json({
       message: "Password reset link created. This link expires in 15 minutes.",
       resetLink,
     });
   } catch (error) {
     console.error("FORGOT PASSWORD ERROR:", error);
-    res.status(500).json({ message: error.message || "Forgot password failed" });
+    return res.status(500).json({
+      message: error.message || "Forgot password failed",
+    });
   }
 });
 
 router.post("/reset-password/:token", async (req, res) => {
   try {
-    let body = req.body;
-
-    if (body?.type === "Buffer" && Array.isArray(body.data)) {
-      body = JSON.parse(Buffer.from(body.data).toString("utf8"));
-    }
+    const body = parseRequestBody(req.body);
 
     const { token } = req.params;
-    const { password } = body;
+    const password = body?.password;
 
     if (!password) {
-      return res.status(400).json({ message: "New password is required" });
+      return res.status(400).json({
+        message: "New password is required",
+        receivedBody: req.body,
+        parsedBody: body,
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
     }
 
     const user = await User.findOne({
@@ -228,12 +238,14 @@ router.post("/reset-password/:token", async (req, res) => {
 
     await user.save();
 
-    res.json({
+    return res.json({
       message: "Password updated successfully",
     });
   } catch (error) {
     console.error("RESET PASSWORD ERROR:", error);
-    res.status(500).json({ message: error.message || "Reset password failed" });
+    return res.status(500).json({
+      message: error.message || "Reset password failed",
+    });
   }
 });
 

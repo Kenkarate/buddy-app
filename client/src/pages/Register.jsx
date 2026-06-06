@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../api/api";
 import { GoogleLogin } from "@react-oauth/google";
-
+import api from "../api/api";
 
 function Register() {
   const navigate = useNavigate();
@@ -14,6 +13,17 @@ function Register() {
   });
 
   const [error, setError] = useState("");
+
+  const goAfterRegister = () => {
+    const pendingProgram = localStorage.getItem("buddyPendingProgram");
+
+    if (pendingProgram) {
+      navigate(`/razorpay/${pendingProgram}`);
+      return;
+    }
+
+    navigate("/workouts");
+  };
 
   const handleChange = (e) => {
     setForm({
@@ -32,43 +42,27 @@ function Register() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      const pendingProgram = localStorage.getItem("buddyPendingProgram");
-
-      if (pendingProgram) {
-        navigate(`/razorpay/${pendingProgram}`);
-        return;
-      }
-
-      navigate("/workouts");
-
-      navigate("/workouts");
+      goAfterRegister();
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     }
-    const handleGoogleRegister = async (credentialResponse) => {
-      setError("");
+  };
 
-      try {
-        const res = await api.post("/auth/google", {
-          credential: credentialResponse.credential,
-        });
+  const handleGoogleRegister = async (credentialResponse) => {
+    setError("");
 
-        localStorage.setItem("buddyToken", res.data.token);
-        localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
+    try {
+      const res = await api.post("/auth/google", {
+        credential: credentialResponse.credential,
+      });
 
-        const pendingProgram = localStorage.getItem("buddyPendingProgram");
+      localStorage.setItem("buddyToken", res.data.token);
+      localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-        if (pendingProgram) {
-          navigate(`/razorpay/${pendingProgram}`);
-          return;
-        }
-
-        navigate("/workouts");
-      } catch (err) {
-        setError(err.response?.data?.message || "Google signup failed");
-      }
-    };
-
+      goAfterRegister();
+    } catch (err) {
+      setError(err.response?.data?.message || "Google signup failed");
+    }
   };
 
   return (
@@ -105,7 +99,8 @@ function Register() {
 
         {error && <p className="error">{error}</p>}
 
-        <button>Create Account</button>
+        <button type="submit">Create Account</button>
+
         <div className="google-login-box">
           <GoogleLogin
             onSuccess={handleGoogleRegister}

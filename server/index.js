@@ -23,8 +23,6 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
 ];
 
-app.use("/api/payments", paymentRoutes);
-
 app.use(
   cors({
     origin: true,
@@ -55,6 +53,7 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/user", userDataRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.use("/api/workout-data", workoutDataRoutes);
 app.use("/api/diet-data", dietDataRoutes);

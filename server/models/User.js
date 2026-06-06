@@ -38,6 +38,17 @@ const bmiRecordSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema(
   {
     name: String,
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    password: {
+      type: String,
+    },
+
     googleId: {
       type: String,
     },
@@ -50,15 +61,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["email", "google"],
       default: "email",
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    password: {
-      type: String,
     },
 
     role: {
@@ -74,30 +76,34 @@ const userSchema = new mongoose.Schema(
     },
 
     subscriptionStatus: {
-      subscriptionStartedAt: {
-        type: Date,
-      },
-
-      subscriptionExpiresAt: {
-        type: Date,
-      },
-
-      lastPayment: {
-        razorpayOrderId: String,
-        razorpayPaymentId: String,
-        razorpaySignature: String,
-        program: String,
-        paidAt: Date,
-      },
-    },
-    resetPasswordToken: {
       type: String,
+      enum: ["none", "paid", "expired"],
+      default: "none",
     },
-    resetPasswordExpires: {
+
+    subscriptionStartedAt: {
       type: Date,
     },
 
-    trialStartedAt: Date,
+    subscriptionExpiresAt: {
+      type: Date,
+    },
+
+    lastPayment: {
+      razorpayOrderId: String,
+      razorpayPaymentId: String,
+      razorpaySignature: String,
+      program: String,
+      paidAt: Date,
+    },
+
+    resetPasswordToken: {
+      type: String,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+    },
 
     dietWarningAccepted: {
       type: Boolean,
@@ -113,9 +119,6 @@ const userSchema = new mongoose.Schema(
     assignedDiet: [assignedDietSchema],
     weightRecords: [weightRecordSchema],
     bmiRecords: [bmiRecordSchema],
-
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
   },
   { timestamps: true }
 );

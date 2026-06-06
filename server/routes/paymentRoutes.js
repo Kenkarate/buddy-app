@@ -3,32 +3,39 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const protect = require("../middleware/authMiddleware");
 const User = require("../models/User");
+
 const router = express.Router();
 
 const planPrices = {
   normal: {
     title: "Normal Workout",
-    amount: 8000, // ₹80
+    amount: 8000, // ₹80 in paise
+    finalProgram: "normal-workouts",
   },
   "normal-workout": {
     title: "Normal Workout",
     amount: 8000,
+    finalProgram: "normal-workouts",
   },
   "normal-workouts": {
     title: "Normal Workout",
     amount: 8000,
+    finalProgram: "normal-workouts",
   },
   home: {
     title: "Home Workout",
-    amount: 15000, // ₹150
+    amount: 15000, // ₹150 in paise
+    finalProgram: "home-workout",
   },
   "home-workout": {
     title: "Home Workout",
     amount: 15000,
+    finalProgram: "home-workout",
   },
   "home-workouts": {
     title: "Home Workout",
     amount: 15000,
+    finalProgram: "home-workout",
   },
 };
 
@@ -53,55 +60,11 @@ function parseBody(body) {
 router.post("/create-order", protect, async (req, res) => {
   try {
     const body = parseBody(req.body);
-
-    console.log("CREATE ORDER BODY:", body);
-
     const rawProgram = body.program || body.plan || body.planKey;
 
     const normalizedProgram = String(rawProgram || "")
       .trim()
       .toLowerCase();
-
-    console.log("NORMALIZED PROGRAM:", normalizedProgram);
-
-    const selectedProgram = String(program || "")
-      .trim()
-      .toLowerCase();
-
-    let finalProgram = selectedProgram;
-
-    if (selectedProgram === "normal" || selectedProgram === "normal-workout") {
-      finalProgram = "normal-workouts";
-    }
-
-    if (selectedProgram === "home" || selectedProgram === "home-workouts") {
-      finalProgram = "home-workout";
-    }
-
-    const subscriptionStartedAt = new Date();
-
-    let subscriptionExpiresAt = new Date();
-    subscriptionExpiresAt.setMonth(subscriptionExpiresAt.getMonth() + 1);
-
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      {
-        selectedProgram: finalProgram,
-        subscriptionStatus: "paid",
-        subscriptionStartedAt,
-        subscriptionExpiresAt,
-        lastPayment: {
-          razorpayOrderId: razorpay_order_id,
-          razorpayPaymentId: razorpay_payment_id,
-          razorpaySignature: razorpay_signature,
-          program: finalProgram,
-          paidAt: new Date(),
-        },
-      },
-      {
-        new: true,
-      }
-    ).select("-password");
 
     const selectedPlan = planPrices[normalizedProgram];
 
@@ -128,10 +91,10 @@ router.post("/create-order", protect, async (req, res) => {
     const order = await razorpay.orders.create({
       amount: selectedPlan.amount,
       currency: "INR",
-      receipt: `buddy_${normalizedProgram}_${Date.now()}`,
+      receipt: `buddy_${selectedPlan.finalProgram}_${Date.now()}`,
       notes: {
         userId: req.user.id,
-        program: normalizedProgram,
+        program: selectedPlan.finalProgram,
       },
     });
 
@@ -142,7 +105,7 @@ router.post("/create-order", protect, async (req, res) => {
       currency: order.currency,
       keyId: process.env.RAZORPAY_KEY_ID,
       planTitle: selectedPlan.title,
-      program: normalizedProgram,
+      program: selectedPlan.finalProgram,
     });
   } catch (error) {
     console.error("CREATE RAZORPAY ORDER ERROR:", error);
@@ -180,10 +143,45 @@ router.post("/verify", protect, async (req, res) => {
       });
     }
 
+    const normalizedProgram = String(program || "")
+      .trim()
+      .toLowerCase();
+
+    const selectedPlan = planPrices[normalizedProgram];
+
+    if (!selectedPlan) {
+      return res.status(400).json({
+        message: "Invalid payment plan",
+        receivedProgram: program,
+      });
+    }
+
+    const subscriptionStartedAt = new Date();
+    const subscriptionExpiresAt = new Date();
+    subscriptionExpiresAt.setMonth(subscriptionExpiresAt.getMonth() + 1);
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        selectedProgram: selectedPlan.finalProgram,
+        subscriptionStatus: "paid",
+        subscriptionStartedAt,
+        subscriptionExpiresAt,
+        lastPayment: {
+          razorpayOrderId: razorpay_order_id,
+          razorpayPaymentId: razorpay_payment_id,
+          razorpaySignature: razorpay_signature,
+          program: selectedPlan.finalProgram,
+          paidAt: new Date(),
+        },
+      },
+      { new: true }
+    ).select("-password");
+
     res.json({
       success: true,
       message: "Payment verified successfully",
-      program: finalProgram,
+      program: selectedPlan.finalProgram,
       user,
     });
   } catch (error) {

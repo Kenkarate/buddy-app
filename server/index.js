@@ -14,6 +14,7 @@ const userDataRoutes = require("./routes/userDataRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 
+const normalWorkoutScheduleRoutes = require("./routes/normalWorkoutScheduleRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 
 const app = express();
@@ -54,6 +55,7 @@ app.use("/api/user", userDataRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/normal-workout-schedules", normalWorkoutScheduleRoutes);
 
 app.use("/api/workout-data", workoutDataRoutes);
 app.use("/api/diet-data", dietDataRoutes);

@@ -17,10 +17,14 @@ import Profile from "./pages/Profile";
 
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminDailyWorkout from "./pages/AdminDailyWorkout";
+import AdminWeeklyWorkout from "./pages/AdminWeeklyWorkout";
+import AdminUsers from "./pages/AdminUsers";
 
 import FooterNav from "./components/FooterNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import RouteLoader from "./components/RouteLoader";
 
 import HomeWorkoutSetup from "./pages/HomeWorkoutSetup";
 import DummyRazorpay from "./pages/DummyRazorpay";
@@ -28,6 +32,7 @@ import DummyRazorpay from "./pages/DummyRazorpay";
 import WorkoutList from "./pages/WorkoutList";
 import WorkoutDetail from "./pages/WorkoutDetail";
 import ComingSoon from "./pages/ComingSoon";
+import NotFound from "./pages/NotFound";
 
 import Store from "./pages/Store";
 import ProductDetail from "./pages/ProductDetail";
@@ -74,6 +79,7 @@ function UserLayout({ children }) {
 function App() {
   return (
     <BrowserRouter>
+      <RouteLoader />
       <Routes>
         <Route path="/" element={<Home />} />
 
@@ -169,6 +175,30 @@ function App() {
           }
         />
         <Route
+          path="/admin/daily-workout"
+          element={
+            <AdminRoute>
+              <AdminDailyWorkout />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/weekly-workout"
+          element={
+            <AdminRoute>
+              <AdminWeeklyWorkout />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
   path="/workout-list/:part"
   element={
     <ProtectedRoute>
@@ -211,7 +241,7 @@ function App() {
   }
 />
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

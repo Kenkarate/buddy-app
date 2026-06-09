@@ -13,16 +13,28 @@ import api from "../api/api";
 function Weight() {
   const [weight, setWeight] = useState("");
   const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const loadRecords = async () => {
-    const res = await api.get("/user/weight");
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.get("/user/weight");
 
-    const formatted = res.data.map((item) => ({
-      weight: item.weight,
-      date: new Date(item.date).toLocaleDateString(),
-    }));
+      const formatted = res.data.map((item) => ({
+        weight: item.weight,
+        date: new Date(item.date).toLocaleDateString(),
+      }));
 
-    setRecords(formatted);
+      setRecords(formatted);
+    } catch (loadError) {
+      console.error("Failed to load weight records:", loadError);
+      setError("Could not load your weight history.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -31,13 +43,24 @@ function Weight() {
 
   const addWeight = async (e) => {
     e.preventDefault();
+    if (saving) return;
 
-    await api.post("/user/weight", {
-      weight: Number(weight),
-    });
+    try {
+      setSaving(true);
+      setError("");
 
-    setWeight("");
-    loadRecords();
+      await api.post("/user/weight", {
+        weight: Number(weight),
+      });
+
+      setWeight("");
+      await loadRecords();
+    } catch (saveError) {
+      console.error("Failed to save weight:", saveError);
+      setError("Could not save your weight. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -56,13 +79,19 @@ function Weight() {
           required
         />
 
-        <button>Add Weight</button>
+        <button disabled={saving}>
+          {saving ? "Saving..." : "Add Weight"}
+        </button>
       </form>
+
+      {error && <div className="trainer-empty-state admin-error-state">{error}</div>}
 
       <div className="chart-card">
         <h3>Progress Chart</h3>
 
-        {records.length === 0 ? (
+        {loading ? (
+          <div className="skeleton-panel" />
+        ) : records.length === 0 ? (
           <p>No weight records yet.</p>
         ) : (
           <ResponsiveContainer width="100%" height={260}>

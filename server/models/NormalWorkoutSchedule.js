@@ -14,7 +14,7 @@ const AssignedWorkoutSchema = new mongoose.Schema(
 
     bodyPart: {
       type: String,
-      required: true,
+      default: "Mixed",
     },
 
     image: {

@@ -3,6 +3,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CreditCard, ShieldCheck } from "lucide-react";
 import api from "../api/api";
 
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("buddyUser") || "{}");
+  } catch {
+    localStorage.removeItem("buddyUser");
+    return {};
+  }
+}
+
 function DummyRazorpay() {
   const navigate = useNavigate();
   const { program } = useParams();
@@ -55,7 +64,7 @@ function DummyRazorpay() {
 
       const { orderId, amount, currency, keyId, planTitle } = orderRes.data;
 
-      const user = JSON.parse(localStorage.getItem("buddyUser") || "{}");
+      const user = getStoredUser();
 
       const options = {
         key: keyId,

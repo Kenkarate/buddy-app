@@ -11,10 +11,13 @@ function AdminLogin() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const login = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
 
     try {
       const res = await api.post("/auth/login", form);
@@ -30,6 +33,8 @@ function AdminLogin() {
       navigate("/admin");
     } catch (err) {
       setError(err.response?.data?.message || "Admin login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,7 +72,9 @@ function AdminLogin() {
 
         {error && <p className="error">{error}</p>}
 
-        <button>Login as Admin</button>
+        <button disabled={loading}>
+          {loading ? "Checking..." : "Login as Admin"}
+        </button>
       </form>
     </div>
   );

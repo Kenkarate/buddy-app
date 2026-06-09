@@ -21,6 +21,21 @@ function parseBody(body) {
   return body;
 }
 
+function summarizeBodyParts(workouts = [], fallback = "Mixed") {
+  const uniqueBodyParts = [
+    ...new Set(
+      workouts
+        .map((workout) => workout.bodyPart)
+        .filter(Boolean)
+        .map((part) => String(part).trim())
+    ),
+  ];
+
+  if (uniqueBodyParts.length === 0) return fallback || "Mixed";
+  if (uniqueBodyParts.length === 1) return uniqueBodyParts[0];
+  return "Mixed";
+}
+
 // GET all schedules for a month
 // Example: /api/normal-workout-schedules?month=2026-06
 router.get("/", async (req, res) => {
@@ -75,7 +90,6 @@ router.put("/:dateKey", async (req, res) => {
     const body = parseBody(req.body);
 
     const dateKey = req.params.dateKey;
-    const bodyPart = body.bodyPart;
     const workouts = Array.isArray(body.workouts) ? body.workouts : [];
 
     if (!dateKey) {
@@ -84,26 +98,12 @@ router.put("/:dateKey", async (req, res) => {
       });
     }
 
-    if (!bodyPart) {
-      return res.status(400).json({
-        message: "Body part is required",
-      });
-    }
-
-    const hasDifferentBodyPart = workouts.some(
-      (workout) => workout.bodyPart !== bodyPart
-    );
-
-    if (hasDifferentBodyPart) {
-      return res.status(400).json({
-        message: "Only one body part can be assigned for one date",
-      });
-    }
+    const bodyPart = summarizeBodyParts(workouts, body.bodyPart);
 
     const cleanedWorkouts = workouts.map((workout) => ({
       workoutId: workout.workoutId,
       workoutName: workout.workoutName,
-      bodyPart,
+      bodyPart: workout.bodyPart || bodyPart,
       image: workout.image || "",
       gif: workout.gif || "",
       sets: Number(workout.sets || 0),

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Home, Calculator, Utensils, ShoppingBag, User } from "lucide-react";
 
 const navItems = [
@@ -30,15 +30,28 @@ const navItems = [
 ];
 
 function FooterNav() {
+  const location = useLocation();
+
+  const isActivePath = (path) => {
+    if (path === "/workouts") {
+      return [
+        "/workouts",
+        "/daily-workout",
+        "/workout-list",
+        "/workout-detail",
+      ].some((prefix) => location.pathname.startsWith(prefix));
+    }
+
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
   return (
     <nav className="footer-nav">
       {navItems.map(({ path, label, Icon }) => (
         <NavLink
           key={path}
           to={path}
-          className={({ isActive }) =>
-            isActive ? "footer-nav-item active" : "footer-nav-item"
-          }
+          className={isActivePath(path) ? "footer-nav-item active" : "footer-nav-item"}
         >
           <Icon size={25} strokeWidth={2.2} />
           <span>{label}</span>

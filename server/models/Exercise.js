@@ -2,14 +2,60 @@ const mongoose = require("mongoose");
 
 const exerciseSchema = new mongoose.Schema(
   {
+    exerciseId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+
     name: {
       type: String,
       required: true,
     },
 
+    force: String,
+    level: {
+      type: String,
+      index: true,
+    },
+    mechanic: String,
+    equipment: {
+      type: String,
+      index: true,
+    },
+    primaryMuscles: {
+      type: [String],
+      default: [],
+      index: true,
+    },
+    secondaryMuscles: {
+      type: [String],
+      default: [],
+    },
+    instructions: {
+      type: [String],
+      default: [],
+    },
+    category: {
+      type: String,
+      index: true,
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    imageUrls: {
+      type: [String],
+      default: [],
+    },
+    bodyPart: {
+      type: String,
+      index: true,
+    },
+
     targetMuscle: {
       type: String,
-      required: true,
     },
 
     musclesTrained: [String],

@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const workoutDataRoutes = require("./routes/workoutDataRoutes");
+const exerciseRoutes = require("./routes/exerciseRoutes");
 const dietDataRoutes = require("./routes/dietDataRoutes");
 const adminAssignmentRoutes = require("./routes/adminAssignmentRoutes");
 const contactRoutes = require("./routes/contactRoutes");
@@ -12,7 +13,10 @@ const authRoutes = require("./routes/authRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const userDataRoutes = require("./routes/userDataRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const workoutEventRoutes = require("./routes/workoutEventRoutes");
+const workoutPlanRoutes = require("./routes/workoutPlanRoutes");
 
 const normalWorkoutScheduleRoutes = require("./routes/normalWorkoutScheduleRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
@@ -52,10 +56,14 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/user", userDataRoutes);
+app.use("/api/admin", adminDashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/normal-workout-schedules", normalWorkoutScheduleRoutes);
+app.use("/api/exercises", exerciseRoutes);
+app.use("/api/workout-events", workoutEventRoutes);
+app.use("/api/workout-plans", workoutPlanRoutes);
 
 app.use("/api/workout-data", workoutDataRoutes);
 app.use("/api/diet-data", dietDataRoutes);

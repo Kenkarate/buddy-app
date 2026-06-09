@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import api from "../api/api";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({
     email: "",
@@ -12,21 +13,25 @@ function Login() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const goAfterLogin = () => {
     const pendingProgram = localStorage.getItem("buddyPendingProgram");
+    const returnPath = location.state?.from;
 
     if (pendingProgram) {
       navigate(`/razorpay/${pendingProgram}`);
       return;
     }
 
-    navigate("/workouts");
+    navigate(returnPath || "/workouts", { replace: Boolean(returnPath) });
   };
 
   const login = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
 
     try {
       const res = await api.post("/auth/login", form);
@@ -42,11 +47,15 @@ function Login() {
       goAfterLogin();
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async (credentialResponse) => {
+    if (loading) return;
     setError("");
+    setLoading(true);
 
     try {
       const res = await api.post("/auth/google", {
@@ -64,6 +73,8 @@ function Login() {
       goAfterLogin();
     } catch (err) {
       setError(err.response?.data?.message || "Google login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,7 +102,9 @@ function Login() {
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
         <div className="google-login-box">
           <GoogleLogin

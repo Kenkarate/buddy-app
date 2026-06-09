@@ -13,10 +13,21 @@ import {
 } from "lucide-react";
 import api from "../api/api";
 
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("buddyUser") || "{}");
+  } catch {
+    localStorage.removeItem("buddyUser");
+    return {};
+  }
+}
+
 function Profile() {
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState("");
   const [openFaq, setOpenFaq] = useState(0);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
@@ -34,7 +45,7 @@ function Profile() {
     message: "",
   });
 
-  const storedUser = JSON.parse(localStorage.getItem("buddyUser") || "{}");
+  const storedUser = getStoredUser();
 const userEmail = profile?.email || storedUser?.email || "";
 const userName = profile?.name || storedUser?.name || "Buddy User";
 const membershipTier =
@@ -46,19 +57,24 @@ const membershipTier =
 
 const loadProfile = async () => {
   try {
+    setProfileLoading(true);
+    setProfileError("");
     const res = await api.get("/auth/profile");
     setProfile(res.data);
   } catch (error) {
     console.error("Failed to load profile:", error);
 
-    const savedUser = JSON.parse(localStorage.getItem("buddyUser") || "{}");
+    const savedUser = getStoredUser();
 
     if (savedUser?.email) {
       setProfile(savedUser);
+      setProfileError("Showing saved profile details. Connect to the server to refresh.");
       return;
     }
 
     navigate("/login");
+  } finally {
+    setProfileLoading(false);
   }
 };
 
@@ -176,8 +192,13 @@ const dismissInstallModal = () => {
   localStorage.setItem("buddyInstallDismissed", "true");
 };
 
-if (!profile && !userEmail) {
-  return <p className="muted">Loading profile...</p>;
+if (profileLoading && !profile && !userEmail) {
+  return (
+    <div className="elite-profile-page">
+      <div className="skeleton-panel tall" />
+      <div className="skeleton-panel" />
+    </div>
+  );
 }
 
   return (
@@ -192,6 +213,12 @@ if (!profile && !userEmail) {
       </div>
 
       <h1 className="profile-title">Your Profile</h1>
+
+      {profileError && (
+        <div className="trainer-empty-state admin-error-state">
+          {profileError}
+        </div>
+      )}
 
       <section className="elite-profile-card">
         <div className="profile-info-block">

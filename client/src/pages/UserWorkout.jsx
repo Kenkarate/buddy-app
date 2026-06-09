@@ -1,55 +1,98 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock } from "lucide-react";
 import api from "../api/api";
 import { normalWorkoutParts } from "../data/dummyNormalWorkouts";
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=900&q=80";
+
+function getStoredArray(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "[]");
+  } catch {
+    localStorage.removeItem(key);
+    return [];
+  }
+}
 
 function UserWorkout() {
   const navigate = useNavigate();
 
   const [timer, setTimer] = useState(null);
   const [timeLeft, setTimeLeft] = useState("");
+  const [todayPlan, setTodayPlan] = useState(null);
+  const [weeklyPlan, setWeeklyPlan] = useState(null);
 
   const selectedProgram = localStorage.getItem("buddySelectedProgram");
   const paymentStatus = localStorage.getItem("buddyPaymentStatus");
-  const homeWorkouts = JSON.parse(localStorage.getItem("buddyHomeWorkouts") || "[]");
+  const homeWorkouts = getStoredArray("buddyHomeWorkouts");
   const [profile, setProfile] = useState(null);
-
-
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState("");
+  const [homePlan, setHomePlan] = useState([]);
+  const [homePlanLoading, setHomePlanLoading] = useState(false);
+  const [homePlanError, setHomePlanError] = useState("");
 
   useEffect(() => {
-  const loadProfile = async () => {
-    try {
-      const res = await api.get("/auth/profile");
-      setProfile(res.data);
-    } catch (error) {
-      console.error("Failed to load profile:", error);
+    let cancelled = false;
+
+    const loadProfile = async () => {
+      try {
+        setProfileLoading(true);
+        setProfileError("");
+        const res = await api.get("/auth/profile");
+        if (!cancelled) setProfile(res.data);
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+        if (!cancelled) setProfileError("Could not verify your membership. Please try again.");
+      } finally {
+        if (!cancelled) setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const effectiveProgram = selectedProgram || profile?.selectedProgram;
+    if (effectiveProgram !== "home-workout") return;
+
+    let cancelled = false;
+
+    async function loadHomePlan() {
+      try {
+        setHomePlanLoading(true);
+        setHomePlanError("");
+        const res = await api.get("/exercises/home-plan");
+        if (!cancelled) setHomePlan(res.data.days || []);
+      } catch (error) {
+        console.error("Failed to load home plan:", error);
+        if (!cancelled) setHomePlanError("Run npm run seed:exercises to load home workout exercises.");
+      } finally {
+        if (!cancelled) setHomePlanLoading(false);
+      }
     }
-  };
 
-  loadProfile();
-}, []);
-
-const dbProgram = profile?.selectedProgram;
-const dbSubscription = profile?.subscriptionStatus;
-
-if (
-  selectedProgram === "normal-workouts" &&
-  dbSubscription !== "paid" &&
-  paymentStatus !== "paid"
-) {
-  return (
-    <div className="elite-empty-card">
-      <h2>Payment Required</h2>
-      <p>Please complete payment to unlock normal workouts.</p>
-    </div>
-  );
-}
+    loadHomePlan();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.selectedProgram, selectedProgram]);
 
   const loadTimer = async () => {
     try {
-      const res = await api.get("/workout-data/daily-schedule");
-      setTimer(res.data);
+      const today = new Date();
+      const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const [dailyRes, weeklyRes] = await Promise.all([
+        api.get(`/workout-plans/daily?date=${dateKey}`),
+        api.get("/workout-plans/weekly"),
+      ]);
+      setTodayPlan(dailyRes.data);
+      setWeeklyPlan(weeklyRes.data);
+      setTimer({ startsAt: new Date().toISOString() });
     } catch (error) {
       console.error("Failed to load timer:", error);
     }
@@ -89,36 +132,124 @@ if (
     return () => clearInterval(interval);
   }, [timer]);
 
-  if (selectedProgram === "normal-workouts" && paymentStatus !== "paid") {
+  const dbSubscription = profile?.subscriptionStatus;
+  const effectiveProgram = selectedProgram || profile?.selectedProgram;
+  const hasPaidNormalAccess =
+    paymentStatus === "paid" || dbSubscription === "paid";
+
+  if (profileLoading) {
     return (
-      <div className="elite-empty-card">
-        <h2>Payment Required</h2>
-        <p>Please complete payment to unlock normal workouts.</p>
+      <div className="elite-workout-page">
+        <div className="skeleton-panel tall" />
+        <div className="skeleton-grid">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </div>
     );
   }
 
-  if (selectedProgram === "home-workout") {
+  if (profileError && effectiveProgram === "normal-workouts") {
+    return (
+      <div className="elite-empty-card">
+        <h2>Unable to Check Access</h2>
+        <p>{profileError}</p>
+        <button type="button" onClick={() => window.location.reload()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!effectiveProgram) {
+    return (
+      <div className="elite-empty-card">
+        <h2>Choose a Plan</h2>
+        <p>Select a workout plan first to unlock your training area.</p>
+        <button type="button" onClick={() => navigate("/")}>
+          View Plans
+        </button>
+      </div>
+    );
+  }
+
+  if (effectiveProgram === "normal-workouts" && !hasPaidNormalAccess) {
+    return (
+      <div className="elite-empty-card">
+        <h2>Payment Required</h2>
+        <p>Please complete payment to unlock normal workouts.</p>
+        <button type="button" onClick={() => navigate("/payment/normal-workouts")}>
+          View Plans
+        </button>
+      </div>
+    );
+  }
+
+  if (effectiveProgram === "home-workout") {
     return (
       <div className="elite-workout-page">
         <section className="target-zones-header">
           <div>
             <h1>Home Workouts</h1>
-            <p>Based on your selected equipment</p>
+            <p>30 days · 5 beginner/intermediate exercises per day</p>
           </div>
         </section>
 
-        <div className="dummy-workout-list">
-          {homeWorkouts.map((workout, index) => (
-            <div className="dummy-workout-card" key={`${workout.name}-${index}`}>
-              <p>{workout.muscle}</p>
-              <h2>{workout.name}</h2>
-              <span>
-                {workout.sets} sets · {workout.reps}
-              </span>
-            </div>
-          ))}
-        </div>
+        {homePlanLoading && <div className="trainer-empty-state">Loading home workout plan...</div>}
+        {homePlanError && <div className="trainer-empty-state">{homePlanError}</div>}
+
+        {!homePlanLoading && !homePlanError && (
+          <div className="home-plan-days">
+            {homePlan.map((day) => (
+              <section className="home-plan-day-card" key={day.day}>
+                <div className="home-plan-day-head">
+                  <h2>Day {day.day}</h2>
+                  <span>{day.exercises?.length || 0} exercises</span>
+                </div>
+
+                <div className="dummy-workout-list">
+                  {(day.exercises || []).map((workout) => (
+                    <button
+                      type="button"
+                      className="dummy-workout-card home-exercise-row"
+                      key={workout.exerciseId}
+                      onClick={() => navigate(`/workout-detail/${workout.bodyPart}/${workout.exerciseId}`)}
+                    >
+                      <img
+                        src={workout.imageUrls?.[0] || FALLBACK_IMAGE}
+                        alt={workout.name}
+                        onError={(event) => {
+                          event.currentTarget.src = FALLBACK_IMAGE;
+                        }}
+                      />
+                      <div>
+                        <p>{workout.primaryMuscles?.[0] || workout.bodyPart}</p>
+                        <h2>{workout.name}</h2>
+                        <span>{workout.equipment || "bodyweight"} · {workout.level || "beginner"}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
+
+        {homeWorkouts.length > 0 && homePlan.length === 0 && (
+          <div className="dummy-workout-list">
+            {homeWorkouts.map((workout, index) => (
+              <div className="dummy-workout-card" key={`${workout.name}-${index}`}>
+                <p>{workout.muscle}</p>
+                <h2>{workout.name}</h2>
+                <span>
+                  {workout.sets} sets · {workout.reps}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -140,12 +271,41 @@ if (
       >
         <div>
           <p>Daily Workout</p>
-          <h2>{timeLeft || "Loading..."}</h2>
-          <span>Tap to view today’s workout</span>
+          <h2>{todayPlan?.title || timeLeft || "Loading..."}</h2>
+          <span>
+            {todayPlan
+              ? `${todayPlan.exercises?.length || 0} exercises · resets in ${timeLeft || "..." }`
+              : "Tap to view today’s workout"}
+          </span>
         </div>
 
         <strong>Open</strong>
       </button>
+
+      {weeklyPlan?.days?.some((day) => day.exercises?.length) && (
+        <section className="home-plan-day-card">
+          <div className="home-plan-day-head">
+            <h2>Weekly Workout</h2>
+            <span>
+              {weeklyPlan.isFallback
+                ? `Following ${weeklyPlan.fallbackWeekStartDate}`
+                : weeklyPlan.weekStartDate}
+            </span>
+          </div>
+
+          <div className="dummy-workout-list">
+            {weeklyPlan.days
+              .filter((day) => day.exercises?.length)
+              .map((day) => (
+                <div className="dummy-workout-card" key={day.date}>
+                  <p>{day.dayName} · {day.date}</p>
+                  <h2>{day.title || `${day.bodyPart} Workout`}</h2>
+                  <span>{day.exercises.length} exercises</span>
+                </div>
+              ))}
+          </div>
+        </section>
+      )}
 
       <div className="normal-part-grid">
         {normalWorkoutParts.map((item) => (

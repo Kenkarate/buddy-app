@@ -13,6 +13,7 @@ function Register() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const goAfterRegister = () => {
     const pendingProgram = localStorage.getItem("buddyPendingProgram");
@@ -34,7 +35,9 @@ function Register() {
 
   const register = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
 
     try {
       const res = await api.post("/auth/register", form);
@@ -45,11 +48,15 @@ function Register() {
       goAfterRegister();
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleRegister = async (credentialResponse) => {
+    if (loading) return;
     setError("");
+    setLoading(true);
 
     try {
       const res = await api.post("/auth/google", {
@@ -62,6 +69,8 @@ function Register() {
       goAfterRegister();
     } catch (err) {
       setError(err.response?.data?.message || "Google signup failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,7 +108,9 @@ function Register() {
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit">Create Account</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Creating..." : "Create Account"}
+        </button>
 
         <div className="google-login-box">
           <GoogleLogin

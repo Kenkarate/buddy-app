@@ -5503,6 +5503,164 @@ button {
   margin-top: 1rem;
 }
 
+.admin-calendar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.admin-calendar-head h2 {
+  margin-bottom: 0;
+}
+
+.admin-calendar-head button {
+  width: auto;
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.admin-month-switcher {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.admin-month-switcher button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  display: grid;
+  place-items: center;
+}
+
+.admin-month-switcher strong {
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.admin-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.admin-calendar-weekday {
+  color: #9ca3af;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.admin-calendar-grid article {
+  min-height: 78px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  overflow: hidden;
+}
+
+.admin-calendar-grid article.assigned {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.admin-calendar-grid article > button {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  text-transform: none;
+  letter-spacing: 0;
+  display: grid;
+  gap: 0.1rem;
+  place-items: center;
+}
+
+.admin-calendar-grid article > button strong {
+  font-size: 1rem;
+}
+
+.admin-calendar-grid article > button span {
+  max-width: 100%;
+  color: #9ca3af;
+  font-size: 0.58rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-calendar-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-calendar-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.admin-calendar-list article.assigned {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.admin-calendar-list strong,
+.admin-calendar-list span,
+.admin-calendar-list small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-calendar-list span,
+.admin-calendar-list small {
+  color: #9ca3af;
+}
+
+.admin-calendar-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.15rem;
+}
+
+.admin-calendar-actions button {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  display: grid;
+  place-items: center;
+}
+
+.admin-calendar-actions button:last-child {
+  color: #fecaca;
+  background: rgba(239, 29, 39, 0.16);
+}
+
 .admin-wizard-progress {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -5726,4 +5884,133 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+}
+
+.admin-diet-form label {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-diet-form label span,
+.admin-food-head span {
+  color: #9ca3af;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-diet-meals {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.admin-diet-meal-card,
+.admin-food-row {
+  border: 1px solid rgba(239, 29, 39, 0.22);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 0.85rem;
+}
+
+.admin-diet-meal-head,
+.admin-food-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-diet-meal-head button,
+.admin-food-head button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 12px;
+  background: rgba(239, 29, 39, 0.16);
+  color: #fecaca;
+  display: grid;
+  place-items: center;
+}
+
+.admin-food-row {
+  margin-top: 0.75rem;
+}
+
+.admin-food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.admin-diet-form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.diet-goal-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.diet-goal-toggle button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.diet-goal-toggle button.active {
+  background: var(--elite-lime, #dfff7f);
+  color: #111;
+}
+
+.user-diet-meal {
+  border: 1px solid rgba(223, 255, 127, 0.16);
+  border-radius: 18px;
+  padding: 0.85rem;
+  margin-top: 0.75rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.user-diet-meal h3 {
+  margin: 0 0 0.2rem;
+}
+
+.user-diet-meal small,
+.user-diet-food small {
+  color: #9ca3af;
+}
+
+.user-diet-food {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-diet-food > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.user-diet-food span {
+  color: var(--elite-lime, #dfff7f);
+  font-weight: 900;
+}
+
+.user-diet-food p {
+  color: #d1d5db;
+  font-size: 0.82rem;
+  line-height: 1.5;
 }

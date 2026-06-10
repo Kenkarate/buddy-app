@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { BarChart3, CalendarDays, LogOut, Users, View } from "lucide-react";
+import { BarChart3, CalendarDays, LogOut, Utensils, Users, View } from "lucide-react";
 
 const adminTabs = [
   { path: "/admin", label: "Dashboard", Icon: BarChart3, end: true },
   { path: "/admin/daily-workout", label: "Daily", Icon: CalendarDays },
   { path: "/admin/weekly-workout", label: "Weekly", Icon: View },
+  { path: "/admin/diet", label: "Diet", Icon: Utensils },
   { path: "/admin/users", label: "Users", Icon: Users },
 ];
 

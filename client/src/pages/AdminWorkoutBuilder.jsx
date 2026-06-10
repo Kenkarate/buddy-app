@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Plus, Search, Trash2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Edit, Plus, Search, Trash2 } from "lucide-react";
 import AdminShell from "../components/AdminShell";
 import api from "../api/api";
 
@@ -28,6 +28,12 @@ function addDays(dateKey, amount) {
   const date = new Date(`${dateKey}T00:00:00`);
   date.setDate(date.getDate() + amount);
   return toDateKey(date);
+}
+
+function getMonthKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
 }
 
 function emptyWeeklyPlan(weekStartDate) {
@@ -62,11 +68,13 @@ function AdminWorkoutBuilder({ mode }) {
   const isWeekly = mode === "weekly";
   const today = toDateKey();
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(-1);
+  const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const [weekStartDate, setWeekStartDate] = useState(startOfWeek());
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [dailyPlan, setDailyPlan] = useState(null);
+  const [dailyMonthPlans, setDailyMonthPlans] = useState([]);
   const [weeklyPlan, setWeeklyPlan] = useState(emptyWeeklyPlan(startOfWeek()));
   const [bodyPart, setBodyPart] = useState("Chest");
   const [search, setSearch] = useState("");
@@ -83,11 +91,59 @@ function AdminWorkoutBuilder({ mode }) {
   const activeDate = isWeekly ? activeWeeklyDay?.date : selectedDate;
   const currentPlanId = isWeekly ? weeklyPlan?._id : dailyPlan?._id;
   const selectedCandidate = exerciseRows.find((exercise) => exercise.exerciseId === candidateExerciseId);
+  const monthKey = getMonthKey(calendarDate);
 
   const selectedIds = useMemo(
     () => new Set(selectedExercises.map((exercise) => exercise.exerciseId)),
     [selectedExercises]
   );
+
+  const dailyPlanMap = useMemo(() => {
+    const map = {};
+    dailyMonthPlans.forEach((plan) => {
+      map[plan.date] = plan;
+    });
+    return map;
+  }, [dailyMonthPlans]);
+
+  const dailyCalendarDays = useMemo(() => {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const days = [];
+
+    for (let index = 0; index < firstDay.getDay(); index += 1) {
+      days.push(null);
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day += 1) {
+      const date = new Date(year, month, day);
+      days.push({ day, dateKey: toDateKey(date) });
+    }
+
+    return days;
+  }, [calendarDate]);
+
+  const loadDailyMonthPlans = async () => {
+    if (isWeekly) return;
+
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.get(`/admin/daily-workouts?month=${monthKey}`);
+      setDailyMonthPlans(res.data.plans || []);
+    } catch (loadError) {
+      console.error("Daily month load error:", loadError);
+      setError("Could not load workout calendar.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDailyMonthPlans();
+  }, [isWeekly, monthKey]);
 
   useEffect(() => {
     async function loadDaily() {
@@ -177,6 +233,21 @@ function AdminWorkoutBuilder({ mode }) {
     setSuccess("");
   };
 
+  const openDailyPlan = (dateKey, plan = null, nextStep = 1) => {
+    setSelectedDate(dateKey);
+    setDailyPlan(plan);
+    setBodyPart(plan?.bodyPart || "Chest");
+    setSelectedExercises(plan?.exercises || []);
+    setSuccess("");
+    setError("");
+    setStep(nextStep);
+  };
+
+  const openWeeklyDay = (index, nextStep = 1) => {
+    chooseWeeklyDay(index);
+    setStep(nextStep);
+  };
+
   const addCandidateExercise = () => {
     if (!selectedCandidate) {
       setError("Select a workout first.");
@@ -256,6 +327,7 @@ function AdminWorkoutBuilder({ mode }) {
           : await api.post("/admin/weekly-workout", nextPlan);
         setWeeklyPlan(res.data);
         setSuccess("Weekly workout saved.");
+        setStep(-1);
         return;
       }
 
@@ -269,7 +341,9 @@ function AdminWorkoutBuilder({ mode }) {
         ? await api.put(`/admin/daily-workout/${currentPlanId}`, payload)
         : await api.post("/admin/daily-workout", payload);
       setDailyPlan(res.data);
+      await loadDailyMonthPlans();
       setSuccess(currentPlanId ? "Daily workout updated." : "Daily workout saved.");
+      setStep(-1);
     } catch (saveError) {
       console.error("Workout save error:", saveError);
       setError(saveError.response?.data?.message || "Could not save workout.");
@@ -306,8 +380,10 @@ function AdminWorkoutBuilder({ mode }) {
         await api.delete(`/admin/daily-workout/${currentPlanId}`);
         setDailyPlan(null);
         setSelectedExercises([]);
+        await loadDailyMonthPlans();
       }
       setSuccess("Workout deleted.");
+      setStep(-1);
     } catch (deleteError) {
       console.error("Workout delete error:", deleteError);
       setError("Could not delete workout.");
@@ -316,7 +392,200 @@ function AdminWorkoutBuilder({ mode }) {
     }
   };
 
+  const deleteDailyFromOverview = async (plan) => {
+    const confirmed = window.confirm("Delete this assigned workout?");
+    if (!confirmed) return;
+
+    try {
+      setSaving(true);
+      setError("");
+      await api.delete(`/admin/daily-workout/${plan._id}`);
+      await loadDailyMonthPlans();
+      if (selectedDate === plan.date) {
+        setDailyPlan(null);
+        setSelectedExercises([]);
+      }
+      setSuccess("Workout deleted.");
+    } catch (deleteError) {
+      console.error("Daily overview delete error:", deleteError);
+      setError("Could not delete workout.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteWeeklyDayFromOverview = async (index) => {
+    if (!weeklyPlan?._id) {
+      openWeeklyDay(index, 1);
+      setSelectedExercises([]);
+      return;
+    }
+
+    const confirmed = window.confirm("Delete this day workout?");
+    if (!confirmed) return;
+
+    try {
+      setSaving(true);
+      setError("");
+      const nextPlan = {
+        ...weeklyPlan,
+        days: weeklyPlan.days.map((day, dayIndex) =>
+          dayIndex === index ? { ...day, bodyPart: "", title: "", exercises: [] } : day
+        ),
+      };
+      const res = await api.put(`/admin/weekly-workout/${weeklyPlan._id}`, nextPlan);
+      setWeeklyPlan(res.data);
+      setSuccess("Workout deleted.");
+    } catch (deleteError) {
+      console.error("Weekly overview delete error:", deleteError);
+      setError("Could not delete workout.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const renderStep = () => {
+    if (step === -1) {
+      return (
+        <section className="admin-flow-card">
+          <div className="admin-calendar-head">
+            <div>
+              <p className="admin-step-label">Calendar</p>
+              <h2>{isWeekly ? "Weekly Plan" : "Daily Workouts"}</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (isWeekly) {
+                  openWeeklyDay(selectedDayIndex, 0);
+                  return;
+                }
+
+                openDailyPlan(today, dailyPlanMap[today] || null, 0);
+              }}
+            >
+              <Plus size={18} />
+              Add Workout
+            </button>
+          </div>
+
+          {isWeekly ? (
+            <>
+              <input
+                type="date"
+                value={weekStartDate}
+                onChange={(event) => {
+                  setWeekStartDate(startOfWeek(event.target.value));
+                  setSelectedDayIndex(0);
+                }}
+              />
+              <div className="admin-calendar-list">
+                {(weeklyPlan.days || []).map((day, index) => {
+                  const assigned = day.exercises?.length > 0;
+                  return (
+                    <article key={day.date} className={assigned ? "assigned" : ""}>
+                      <div>
+                        <strong>{day.dayName}</strong>
+                        <span>{day.date}</span>
+                        <small>
+                          {assigned
+                            ? `${day.title || `${day.bodyPart} Workout`} · ${day.exercises.length} workouts`
+                            : "Not assigned"}
+                        </small>
+                      </div>
+                      <div className="admin-calendar-actions">
+                        <button type="button" onClick={() => openWeeklyDay(index, assigned ? 2 : 1)}>
+                          {assigned ? <Edit size={16} /> : <Plus size={16} />}
+                        </button>
+                        {assigned && (
+                          <button type="button" onClick={() => deleteWeeklyDayFromOverview(index)}>
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="admin-month-switcher">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = new Date(calendarDate);
+                    next.setMonth(next.getMonth() - 1);
+                    setCalendarDate(next);
+                  }}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <strong>
+                  {calendarDate.toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </strong>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = new Date(calendarDate);
+                    next.setMonth(next.getMonth() + 1);
+                    setCalendarDate(next);
+                  }}
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {loading ? (
+                <div className="skeleton-grid">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              ) : (
+                <div className="admin-calendar-grid">
+                  {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                    <div className="admin-calendar-weekday" key={`${day}-${index}`}>
+                      {day}
+                    </div>
+                  ))}
+                  {dailyCalendarDays.map((item, index) => {
+                    if (!item) return <div key={`blank-${index}`} />;
+                    const plan = dailyPlanMap[item.dateKey];
+                    return (
+                      <article key={item.dateKey} className={plan ? "assigned" : ""}>
+                        <button
+                          type="button"
+                          onClick={() => openDailyPlan(item.dateKey, plan || null, plan ? 2 : 1)}
+                        >
+                          <strong>{item.day}</strong>
+                          <span>{plan ? plan.bodyPart : "Empty"}</span>
+                        </button>
+                        {plan && (
+                          <div className="admin-calendar-actions">
+                            <button type="button" onClick={() => openDailyPlan(item.dateKey, plan, 2)}>
+                              <Edit size={15} />
+                            </button>
+                            <button type="button" onClick={() => deleteDailyFromOverview(plan)}>
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      );
+    }
+
     if (step === 0) {
       return (
         <section className="admin-flow-card">
@@ -472,31 +741,39 @@ function AdminWorkoutBuilder({ mode }) {
       {error && <div className="admin-notice error">{error}</div>}
       {success && <div className="admin-notice success">{success}</div>}
 
-      <div className="admin-wizard-progress">
-        {[0, 1, 2].map((item) => (
-          <span key={item} className={item <= step ? "active" : ""} />
-        ))}
-      </div>
+      {step >= 0 && (
+        <div className="admin-wizard-progress">
+          {[0, 1, 2].map((item) => (
+            <span key={item} className={item <= step ? "active" : ""} />
+          ))}
+        </div>
+      )}
 
       {renderStep()}
 
-      <div className="admin-wizard-actions">
-        <button type="button" onClick={goBack} disabled={step === 0 || saving}>
-          <ChevronLeft size={18} />
-          Back
-        </button>
-        {step < 2 ? (
-          <button type="button" onClick={goNext} disabled={saving}>
-            Next
-            <ChevronRight size={18} />
+      {step >= 0 && (
+        <div className="admin-wizard-actions">
+          <button
+            type="button"
+            onClick={step === 0 ? () => setStep(-1) : goBack}
+            disabled={saving}
+          >
+            <ChevronLeft size={18} />
+            {step === 0 ? "Calendar" : "Back"}
           </button>
-        ) : (
-          <button type="button" onClick={savePlan} disabled={saving}>
-            <Check size={18} />
-            {saving ? "Saving..." : currentPlanId ? "Update" : "Save"}
-          </button>
-        )}
-      </div>
+          {step < 2 ? (
+            <button type="button" onClick={goNext} disabled={saving}>
+              Next
+              <ChevronRight size={18} />
+            </button>
+          ) : (
+            <button type="button" onClick={savePlan} disabled={saving}>
+              <Check size={18} />
+              {saving ? "Saving..." : currentPlanId ? "Update" : "Save"}
+            </button>
+          )}
+        </div>
+      )}
     </AdminShell>
   );
 }

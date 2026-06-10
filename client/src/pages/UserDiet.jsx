@@ -1,70 +1,58 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, Crown, Flame, Salad, ShieldAlert } from "lucide-react";
-
-function getRecommendedDiet() {
-  const savedResult = localStorage.getItem("buddyLatestBmiResult");
-
-  if (!savedResult) {
-    return "fat-loss";
-  }
-
-  const result = JSON.parse(savedResult);
-
-  if (result.bmi >= 25) return "fat-loss";
-  if (result.bmi < 18.5) return "muscle-gain";
-
-  return "fat-loss";
-}
+import api from "../api/api";
 
 function UserDiet() {
   const navigate = useNavigate();
 
   const [accepted, setAccepted] = useState(false);
-  const [recommendedDiet, setRecommendedDiet] = useState("fat-loss");
-  const [selectedDiet, setSelectedDiet] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const [selectedGoal, setSelectedGoal] = useState("cutting");
+  const [userWeight, setUserWeight] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const warningAccepted = localStorage.getItem("buddyDietWarningAccepted");
-    const recommendation = getRecommendedDiet();
-
     setAccepted(warningAccepted === "true");
-    setRecommendedDiet(recommendation);
   }, []);
+
+  useEffect(() => {
+    if (!accepted) return;
+
+    let cancelled = false;
+
+    async function loadPlans() {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await api.get("/diet-data/personalized-plans");
+        if (!cancelled) {
+          setPlans(res.data.plans || []);
+          setUserWeight(res.data.userWeight || null);
+          setSelectedGoal(res.data.plans?.[0]?.goal || "cutting");
+        }
+      } catch (loadError) {
+        console.error("Load diet plans error:", loadError);
+        if (!cancelled) setError("Could not load diet plans.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadPlans();
+    return () => {
+      cancelled = true;
+    };
+  }, [accepted]);
 
   const acceptWarning = () => {
     localStorage.setItem("buddyDietWarningAccepted", "true");
     setAccepted(true);
   };
 
-  const commonDiets = [
-    {
-      id: "fat-loss",
-      title: "Weight Loss Diet",
-      subtitle: "Best for fat loss and BMI control",
-      calories: "1400 - 1900 kcal",
-      icon: Salad,
-      meals: [
-        "Breakfast: 2 eggs + banana",
-        "Lunch: rice + chicken breast + vegetables",
-        "Snack: fruit or black coffee",
-        "Dinner: lean protein + salad",
-      ],
-    },
-    {
-      id: "muscle-gain",
-      title: "Muscle Gain Diet",
-      subtitle: "Best for bulking and strength gain",
-      calories: "2200 - 3000 kcal",
-      icon: Flame,
-      meals: [
-        "Breakfast: 4 eggs + banana",
-        "Lunch: rice + chicken breast",
-        "Snack: peanut butter toast or shake",
-        "Dinner: rice/chapati + protein source",
-      ],
-    },
-  ];
+  const selectedPlan = plans.find((plan) => plan.goal === selectedGoal);
 
   if (!accepted) {
     return (
@@ -77,16 +65,13 @@ function UserDiet() {
 
         <div className="diet-warning-premium">
           <ShieldAlert size={34} />
-
           <h2>Health Warning</h2>
-
           <p>
-            These diet plans are general fitness guidance. If you have diabetes,
-            thyroid issues, kidney problems, heart problems, pregnancy, food
-            allergies, eating disorders, or any medical condition, consult a
-            doctor or certified nutrition professional before following a diet.
+            These diet plans are general fitness guidance. If you have medical
+            conditions, allergies, eating disorders, pregnancy, or any health
+            issue, consult a doctor or certified nutrition professional before
+            following a diet.
           </p>
-
           <button onClick={acceptWarning}>I Understand & Accept</button>
         </div>
       </div>
@@ -99,97 +84,103 @@ function UserDiet() {
         <p>Nutrition</p>
         <h1>Diet Plans</h1>
         <span>
-          Recommended based on your latest BMI result. For best results, take a
-          personal diet plan.
+          {userWeight
+            ? `Personalized for ${userWeight}kg.`
+            : "Add your weight to get a personalized diet."}
         </span>
       </div>
 
-      <div className="diet-card-list">
-        {commonDiets.map((diet) => {
-          const Icon = diet.icon;
-          const isRecommended = recommendedDiet === diet.id;
-          const isSelected = selectedDiet === diet.id;
+      {error && <div className="trainer-empty-state admin-error-state">{error}</div>}
 
-          return (
-            <div
-              className={
-                isRecommended
-                  ? "diet-select-card recommended"
-                  : "diet-select-card"
-              }
-              key={diet.id}
-              onClick={() => setSelectedDiet(isSelected ? null : diet.id)}
-            >
-              {isRecommended && (
-                <div className="recommended-pill">
-                  <CheckCircle size={15} />
-                  Recommended
-                </div>
-              )}
+      {loading ? (
+        <div className="skeleton-panel tall" />
+      ) : plans.length === 0 ? (
+        <div className="trainer-empty-state">
+          No active cutting or bulking diet has been added by admin yet.
+        </div>
+      ) : (
+        <>
+          <div className="diet-goal-toggle">
+            {plans.map((plan) => {
+              const Icon = plan.goal === "cutting" ? Salad : Flame;
+              return (
+                <button
+                  key={plan.goal}
+                  className={selectedGoal === plan.goal ? "active" : ""}
+                  onClick={() => setSelectedGoal(plan.goal)}
+                >
+                  <Icon size={20} />
+                  {plan.goal === "cutting" ? "Cutting" : "Bulking"}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedPlan && (
+            <div className="diet-select-card recommended">
+              <div className="recommended-pill">
+                <CheckCircle size={15} />
+                {selectedPlan.isPersonalized ? "Personalized" : "Base Plan"}
+              </div>
 
               <div className="diet-card-top">
                 <div className="diet-icon-box">
-                  <Icon size={28} />
+                  {selectedPlan.goal === "cutting" ? <Salad size={28} /> : <Flame size={28} />}
                 </div>
-
                 <div>
-                  <h2>{diet.title}</h2>
-                  <p>{diet.subtitle}</p>
+                  <h2>{selectedPlan.title}</h2>
+                  <p>{selectedPlan.personalizedMessage}</p>
                 </div>
               </div>
 
               <div className="diet-calorie-row">
                 <span>Target Calories</span>
-                <strong>{diet.calories}</strong>
+                <strong>{selectedPlan.adjustedTargetCalories || selectedPlan.targetCalories} kcal</strong>
               </div>
 
-              {isSelected && (
-                <div className="diet-meal-preview">
-                  {diet.meals.map((meal) => (
-                    <p key={meal}>{meal}</p>
-                  ))}
-                </div>
-              )}
+              <div className="diet-calorie-row">
+                <span>Base Weight</span>
+                <strong>{selectedPlan.baseWeight}kg</strong>
+              </div>
 
-              <button>
-                {isSelected ? "Hide Diet" : "View Common Diet"}
-              </button>
+              <div className="diet-meal-preview">
+                {(selectedPlan.meals || []).map((meal) => (
+                  <section className="user-diet-meal" key={meal._id || meal.mealName}>
+                    <h3>{meal.mealName}</h3>
+                    {meal.time && <small>{meal.time}</small>}
+                    {(meal.foods || []).map((food) => (
+                      <div className="user-diet-food" key={food._id || food.name}>
+                        <div>
+                          <strong>{food.name}</strong>
+                          <span>
+                            {food.adjustedQuantity ?? food.quantity} {food.unit || "g"}
+                          </span>
+                        </div>
+                        <p>
+                          {food.adjustedCalories ?? food.calories} kcal · P {food.adjustedProtein ?? food.protein}g · C {food.adjustedCarbs ?? food.carbs}g · F {food.adjustedFats ?? food.fats ?? food.fat}g
+                        </p>
+                        {food.notes && <small>{food.notes}</small>}
+                      </div>
+                    ))}
+                  </section>
+                ))}
+              </div>
             </div>
-          );
-        })}
+          )}
 
-        <div className="personal-diet-card">
-          <div className="recommended-pill personal">
-            <Crown size={15} />
-            Best Result
+          <div className="personal-diet-card">
+            <div className="recommended-pill personal">
+              <Crown size={15} />
+              Best Result
+            </div>
+            <h2>Personal Diet Plan</h2>
+            <p>For medical conditions or precise goals, choose personal training.</p>
+            <button onClick={() => navigate("/payment/personal-training")}>
+              Take Personal Training
+            </button>
           </div>
-
-          <div className="diet-card-top">
-            <div className="diet-icon-box premium">
-              <Crown size={28} />
-            </div>
-
-            <div>
-              <h2>Personal Diet Plan</h2>
-              <p>
-                Custom diet made for your body, BMI, goal, food preference and
-                progress.
-              </p>
-            </div>
-          </div>
-
-          <ul>
-            <li>Trainer-guided diet</li>
-            <li>Goal-based calories</li>
-            <li>Better for medical or special conditions</li>
-            <li>Workout + diet accountability</li>
-          </ul>
-
-          <button onClick={() => navigate("/payment/personal-training")}>
-            Take Personal Training
-          </button>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

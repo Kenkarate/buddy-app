@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminDailyWorkout from "./pages/AdminDailyWorkout";
 import AdminWeeklyWorkout from "./pages/AdminWeeklyWorkout";
 import AdminUsers from "./pages/AdminUsers";
+import AdminDiet from "./pages/AdminDiet";
 
 import FooterNav from "./components/FooterNav";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -195,6 +196,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/diet"
+          element={
+            <AdminRoute>
+              <AdminDiet />
             </AdminRoute>
           }
         />

@@ -13,8 +13,19 @@ const dietPlanSchema = new mongoose.Schema(
       required: true,
     },
 
+    baseWeight: {
+      type: Number,
+      default: 70,
+    },
+
+    targetCalories: {
+      type: Number,
+      default: 0,
+    },
+
     minCalories: Number,
     maxCalories: Number,
+    notes: String,
 
     meals: [
       {
@@ -23,11 +34,17 @@ const dietPlanSchema = new mongoose.Schema(
         foods: [
           {
             name: String,
-            quantity: String,
+            quantity: Number,
+            unit: {
+              type: String,
+              default: "g",
+            },
             calories: Number,
             protein: Number,
             carbs: Number,
+            fats: Number,
             fat: Number,
+            notes: String,
           },
         ],
       },

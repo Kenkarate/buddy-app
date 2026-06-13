@@ -73,10 +73,9 @@ function HomeWorkoutSetup() {
 
   const startHomeWorkout = () => {
     localStorage.setItem("buddySelectedProgram", "home-workout");
-    localStorage.setItem("buddyPaymentStatus", "paid");
     localStorage.setItem("buddyHomeEquipment", JSON.stringify(selectedEquipment));
     localStorage.setItem("buddyHomeWorkouts", JSON.stringify(getSuggestedWorkouts()));
-    navigate("/workouts");
+    navigate("/home-workout");
   };
 
   return (

@@ -16,21 +16,21 @@ const AssignedExerciseSchema = new mongoose.Schema(
   { _id: true }
 );
 
-const WeeklyDaySchema = new mongoose.Schema(
-  {
-    dayName: { type: String, required: true },
-    date: { type: String, required: true },
-    bodyPart: { type: String, default: "" },
-    title: { type: String, default: "" },
-    exercises: { type: [AssignedExerciseSchema], default: [] },
-  },
-  { _id: true }
-);
-
 const WeeklyWorkoutPlanSchema = new mongoose.Schema(
   {
-    weekStartDate: { type: String, required: true, unique: true, index: true },
-    days: { type: [WeeklyDaySchema], default: [] },
+    weekSundayDate: {
+      type: String,
+      required: true,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    weekStartDate: { type: String, required: true, index: true },
+    weekEndDate: { type: String, required: true, index: true },
+    bodyPart: { type: String, default: "Full Body" },
+    title: { type: String, default: "" },
+    exercises: { type: [AssignedExerciseSchema], default: [] },
+    isActive: { type: Boolean, default: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import api from "../api/api";
+import { getPlanRoute, routeAfterPlanSelection } from "../utils/planAccess";
 
 function Login() {
   const navigate = useNavigate();
@@ -15,16 +16,24 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const goAfterLogin = () => {
+  const goAfterLogin = async (user) => {
     const pendingProgram = localStorage.getItem("buddyPendingProgram");
     const returnPath = location.state?.from;
 
     if (pendingProgram) {
-      navigate(`/razorpay/${pendingProgram}`);
+      await routeAfterPlanSelection({
+        api,
+        navigate,
+        program: pendingProgram,
+        replace: true,
+      });
       return;
     }
 
-    navigate(returnPath || "/workouts", { replace: Boolean(returnPath) });
+    const purchasedPlan = user?.selectedPlan || user?.selectedProgram;
+    navigate(returnPath || getPlanRoute(purchasedPlan) || "/workouts", {
+      replace: Boolean(returnPath),
+    });
   };
 
   const login = async (e) => {
@@ -44,7 +53,7 @@ function Login() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      goAfterLogin();
+      await goAfterLogin(res.data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -70,7 +79,7 @@ function Login() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      goAfterLogin();
+      await goAfterLogin(res.data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Google login failed");
     } finally {

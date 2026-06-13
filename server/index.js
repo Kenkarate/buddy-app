@@ -17,6 +17,7 @@ const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const workoutEventRoutes = require("./routes/workoutEventRoutes");
 const workoutPlanRoutes = require("./routes/workoutPlanRoutes");
+const weeklyWorkoutRoutes = require("./routes/weeklyWorkoutRoutes").router;
 
 const normalWorkoutScheduleRoutes = require("./routes/normalWorkoutScheduleRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
@@ -64,6 +65,7 @@ app.use("/api/normal-workout-schedules", normalWorkoutScheduleRoutes);
 app.use("/api/exercises", exerciseRoutes);
 app.use("/api/workout-events", workoutEventRoutes);
 app.use("/api/workout-plans", workoutPlanRoutes);
+app.use("/api/weekly-workout", weeklyWorkoutRoutes);
 
 app.use("/api/workout-data", workoutDataRoutes);
 app.use("/api/diet-data", dietDataRoutes);

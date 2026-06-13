@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import api from "../api/api";
+import { normalizePlan, routeAfterPlanSelection } from "../utils/planAccess";
 
 function Home() {
   const navigate = useNavigate();
+  const [loadingProgram, setLoadingProgram] = useState("");
 
- const chooseProgram = (program) => {
-  localStorage.setItem("buddyPendingProgram", program);
-
-  if (program === "personal-training") {
-    navigate("/coming-soon");
-    return;
-  }
+ const chooseProgram = async (program) => {
+  const normalizedProgram = normalizePlan(program);
+  localStorage.setItem("buddyPendingProgram", normalizedProgram);
 
   const token = localStorage.getItem("buddyToken");
 
@@ -18,7 +18,18 @@ function Home() {
     return;
   }
 
-  navigate(`/razorpay/${program}`);
+  try {
+    setLoadingProgram(normalizedProgram);
+    await routeAfterPlanSelection({
+      api,
+      navigate,
+      program: normalizedProgram,
+    });
+  } catch (error) {
+    navigate(`/payment/${normalizedProgram}`);
+  } finally {
+    setLoadingProgram("");
+  }
 };
 
   return (
@@ -40,31 +51,46 @@ function Home() {
       <div className="program-list">
         <button
           className="program-card personal"
+          disabled={Boolean(loadingProgram)}
           onClick={() => chooseProgram("personal-training")}
         >
           <div>
             <h3>Personal Training</h3>
-            <p>Trainer-assigned workout and diet plan.</p>
+            <p>
+              {loadingProgram === "personal-training"
+                ? "Checking your plan..."
+                : "Trainer-assigned workout and diet plan."}
+            </p>
           </div>
         </button>
 
         <button
           className="program-card normal"
+          disabled={Boolean(loadingProgram)}
           onClick={() => chooseProgram("normal-workouts")}
         >
           <div>
             <h3>Normal Workouts</h3>
-            <p>Gym-based structured training plan.</p>
+            <p>
+              {loadingProgram === "normal-workouts"
+                ? "Checking your plan..."
+                : "Gym-based structured training plan."}
+            </p>
           </div>
         </button>
 
         <button
           className="program-card home"
+          disabled={Boolean(loadingProgram)}
           onClick={() => chooseProgram("home-workout")}
         >
           <div>
             <h3>Home Workout</h3>
-            <p>Train from home with simple routines.</p>
+            <p>
+              {loadingProgram === "home-workout"
+                ? "Checking your plan..."
+                : "Train from home with simple routines."}
+            </p>
           </div>
         </button>
       </div>

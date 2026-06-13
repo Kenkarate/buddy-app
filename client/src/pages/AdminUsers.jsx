@@ -3,6 +3,20 @@ import { Search, UserRound } from "lucide-react";
 import AdminShell from "../components/AdminShell";
 import api from "../api/api";
 
+const planLabels = {
+  "normal-workouts": "Normal Workout",
+  "home-workout": "Home Workout",
+  "personal-training": "Personal Training",
+};
+
+function getChosenWorkout(user = {}) {
+  const activePurchase = (user.purchasedPlans || []).find(
+    (purchase) => purchase.paymentStatus === "paid"
+  );
+  const plan = user.selectedPlan || user.selectedProgram || activePurchase?.plan;
+  return planLabels[plan] || "No workout chosen";
+}
+
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -93,7 +107,7 @@ function AdminUsers() {
                 <strong>{user.name || "Buddy User"}</strong>
                 <span>{user.email}</span>
                 <small>
-                  {user.subscriptionStatus || "none"} · {user.workoutsViewed} views · {user.workoutsCompleted} checked
+                  {getChosenWorkout(user)} · {user.subscriptionStatus || "none"} · {user.workoutsViewed} views
                 </small>
               </div>
             </button>
@@ -118,6 +132,10 @@ function AdminUsers() {
               <div>
                 <span>Payment</span>
                 <strong>{selectedUser.subscriptionStatus || "none"}</strong>
+              </div>
+              <div>
+                <span>Workout chosen</span>
+                <strong>{getChosenWorkout(selectedDetails?.user || selectedUser)}</strong>
               </div>
               <div>
                 <span>Joined</span>

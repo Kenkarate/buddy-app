@@ -15,7 +15,23 @@ function getStoredArray(key) {
   }
 }
 
-function UserWorkout() {
+function hasActivePurchase(profile, plan) {
+  const now = Date.now();
+
+  return (profile?.purchasedPlans || []).some((purchase) => {
+    const expiry = purchase.planExpiryDate
+      ? new Date(purchase.planExpiryDate).getTime()
+      : null;
+
+    return (
+      purchase.plan === plan &&
+      purchase.paymentStatus === "paid" &&
+      (!expiry || expiry > now)
+    );
+  });
+}
+
+function UserWorkout({ routePlan = "" }) {
   const navigate = useNavigate();
 
   const [timer, setTimer] = useState(null);
@@ -57,7 +73,8 @@ function UserWorkout() {
   }, []);
 
   useEffect(() => {
-    const effectiveProgram = selectedProgram || profile?.selectedProgram;
+    const effectiveProgram =
+      routePlan || profile?.selectedPlan || profile?.selectedProgram || selectedProgram;
     if (effectiveProgram !== "home-workout") return;
 
     let cancelled = false;
@@ -80,7 +97,7 @@ function UserWorkout() {
     return () => {
       cancelled = true;
     };
-  }, [profile?.selectedProgram, selectedProgram]);
+  }, [profile?.selectedPlan, profile?.selectedProgram, routePlan, selectedProgram]);
 
   const loadTimer = async () => {
     try {
@@ -88,7 +105,7 @@ function UserWorkout() {
       const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
       const [dailyRes, weeklyRes] = await Promise.all([
         api.get(`/workout-plans/daily?date=${dateKey}`),
-        api.get("/workout-plans/weekly"),
+        api.get("/weekly-workout/current"),
       ]);
       setTodayPlan(dailyRes.data);
       setWeeklyPlan(weeklyRes.data);
@@ -133,9 +150,12 @@ function UserWorkout() {
   }, [timer]);
 
   const dbSubscription = profile?.subscriptionStatus;
-  const effectiveProgram = selectedProgram || profile?.selectedProgram;
-  const hasPaidNormalAccess =
-    paymentStatus === "paid" || dbSubscription === "paid";
+  const effectiveProgram =
+    routePlan || profile?.selectedPlan || profile?.selectedProgram || selectedProgram;
+  const hasPaidAccess =
+    hasActivePurchase(profile, effectiveProgram) ||
+    (profile?.selectedProgram === effectiveProgram && dbSubscription === "paid") ||
+    (selectedProgram === effectiveProgram && paymentStatus === "paid");
 
   if (profileLoading) {
     return (
@@ -151,7 +171,7 @@ function UserWorkout() {
     );
   }
 
-  if (profileError && effectiveProgram === "normal-workouts") {
+  if (profileError) {
     return (
       <div className="elite-empty-card">
         <h2>Unable to Check Access</h2>
@@ -175,12 +195,12 @@ function UserWorkout() {
     );
   }
 
-  if (effectiveProgram === "normal-workouts" && !hasPaidNormalAccess) {
+  if (effectiveProgram && !hasPaidAccess) {
     return (
       <div className="elite-empty-card">
         <h2>Payment Required</h2>
-        <p>Please complete payment to unlock normal workouts.</p>
-        <button type="button" onClick={() => navigate("/payment/normal-workouts")}>
+        <p>Please complete payment to unlock this plan.</p>
+        <button type="button" onClick={() => navigate(`/payment/${effectiveProgram}`)}>
           View Plans
         </button>
       </div>
@@ -282,27 +302,43 @@ function UserWorkout() {
         <strong>Open</strong>
       </button>
 
-      {weeklyPlan?.days?.some((day) => day.exercises?.length) && (
+      {weeklyPlan?.exercises?.length > 0 && (
         <section className="home-plan-day-card">
           <div className="home-plan-day-head">
             <h2>Weekly Workout</h2>
             <span>
-              {weeklyPlan.isFallback
-                ? `Following ${weeklyPlan.fallbackWeekStartDate}`
-                : weeklyPlan.weekStartDate}
+              {weeklyPlan.weekStartDate} to {weeklyPlan.weekEndDate}
             </span>
           </div>
 
+          <div className="daily-workout-main-card weekly-fixed-card">
+            <div>
+              <p>{weeklyPlan.bodyPart}</p>
+              <h2>{weeklyPlan.title || `${weeklyPlan.bodyPart} Weekly Workout`}</h2>
+              <span>{weeklyPlan.exercises.length} exercises · fixed weekly plan</span>
+            </div>
+            <strong>Week</strong>
+          </div>
+
           <div className="dummy-workout-list">
-            {weeklyPlan.days
-              .filter((day) => day.exercises?.length)
-              .map((day) => (
-                <div className="dummy-workout-card" key={day.date}>
-                  <p>{day.dayName} · {day.date}</p>
-                  <h2>{day.title || `${day.bodyPart} Workout`}</h2>
-                  <span>{day.exercises.length} exercises</span>
+            {weeklyPlan.exercises.map((exercise) => (
+              <div className="dummy-workout-card home-exercise-row" key={exercise.exerciseId}>
+                <img
+                  src={exercise.imageUrl || FALLBACK_IMAGE}
+                  alt={exercise.name}
+                  onError={(event) => {
+                    event.currentTarget.src = FALLBACK_IMAGE;
+                  }}
+                />
+                <div>
+                  <p>{exercise.primaryMuscles?.join(", ") || weeklyPlan.bodyPart}</p>
+                  <h2>{exercise.name}</h2>
+                  <span>
+                    {exercise.sets} sets · {exercise.reps} reps · {exercise.rest}s rest
+                  </span>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </section>
       )}

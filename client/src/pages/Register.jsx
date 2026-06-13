@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import api from "../api/api";
+import { getPlanRoute, routeAfterPlanSelection } from "../utils/planAccess";
 
 function Register() {
   const navigate = useNavigate();
@@ -15,15 +16,20 @@ function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const goAfterRegister = () => {
+  const goAfterRegister = async (user) => {
     const pendingProgram = localStorage.getItem("buddyPendingProgram");
 
     if (pendingProgram) {
-      navigate(`/razorpay/${pendingProgram}`);
+      await routeAfterPlanSelection({
+        api,
+        navigate,
+        program: pendingProgram,
+        replace: true,
+      });
       return;
     }
 
-    navigate("/workouts");
+    navigate(getPlanRoute(user?.selectedPlan || user?.selectedProgram));
   };
 
   const handleChange = (e) => {
@@ -45,7 +51,7 @@ function Register() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      goAfterRegister();
+      await goAfterRegister(res.data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -66,7 +72,7 @@ function Register() {
       localStorage.setItem("buddyToken", res.data.token);
       localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
 
-      goAfterRegister();
+      await goAfterRegister(res.data.user);
     } catch (err) {
       setError(err.response?.data?.message || "Google signup failed");
     } finally {

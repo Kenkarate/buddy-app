@@ -24,6 +24,7 @@ import AdminDiet from "./pages/AdminDiet";
 
 import FooterNav from "./components/FooterNav";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PlanRoute from "./components/PlanRoute";
 import AdminRoute from "./components/AdminRoute";
 import RouteLoader from "./components/RouteLoader";
 
@@ -38,7 +39,7 @@ import NotFound from "./pages/NotFound";
 import Store from "./pages/Store";
 import ProductDetail from "./pages/ProductDetail";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Share2 } from "lucide-react";
 import ShareModal from "./components/ShareModal";
 import DailyWorkout from "./pages/DailyWorkout";
@@ -78,18 +79,44 @@ function UserLayout({ children }) {
 }
 
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("buddyTheme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
   return (
     <BrowserRouter>
       <RouteLoader />
       <Routes>
         <Route path="/" element={<Home />} />
 
-        <Route path="/home-workout-setup" element={<HomeWorkoutSetup />} />
+        <Route
+          path="/home-workout-setup"
+          element={
+            <PlanRoute plan="home-workout">
+              <HomeWorkoutSetup />
+            </PlanRoute>
+          }
+        />
 
-<Route path="/razorpay/:program" element={<DummyRazorpay />} />
+<Route
+  path="/razorpay/:program"
+  element={
+    <ProtectedRoute>
+      <DummyRazorpay />
+    </ProtectedRoute>
+  }
+/>
 <Route path="/coming-soon" element={<ComingSoon />} />
 
-        <Route path="/payment/:program" element={<Payment />} />
+        <Route
+          path="/payment/:program"
+          element={
+            <ProtectedRoute>
+              <Payment />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/login" element={<Login />} />
 
@@ -102,22 +129,55 @@ function App() {
         <Route
   path="/daily-workout"
   element={
-    <ProtectedRoute>
+    <PlanRoute anyPlans={["normal-workouts", "home-workout"]}>
       <UserLayout>
         <DailyWorkout />
       </UserLayout>
-    </ProtectedRoute>
+    </PlanRoute>
   }
 />
 
         <Route
           path="/workouts"
           element={
-            <ProtectedRoute>
+            <PlanRoute anyPlans={["normal-workouts", "home-workout"]}>
               <UserLayout>
                 <UserWorkout />
               </UserLayout>
-            </ProtectedRoute>
+            </PlanRoute>
+          }
+        />
+
+        <Route
+          path="/normal-workout"
+          element={
+            <PlanRoute plan="normal-workouts">
+              <UserLayout>
+                <UserWorkout routePlan="normal-workouts" />
+              </UserLayout>
+            </PlanRoute>
+          }
+        />
+
+        <Route
+          path="/home-workout"
+          element={
+            <PlanRoute plan="home-workout">
+              <UserLayout>
+                <UserWorkout routePlan="home-workout" />
+              </UserLayout>
+            </PlanRoute>
+          }
+        />
+
+        <Route
+          path="/personal-training"
+          element={
+            <PlanRoute plan="personal-training">
+              <UserLayout>
+                <ComingSoon />
+              </UserLayout>
+            </PlanRoute>
           }
         />
 
@@ -207,25 +267,25 @@ function App() {
             </AdminRoute>
           }
         />
-        <Route
+<Route
   path="/workout-list/:part"
   element={
-    <ProtectedRoute>
+    <PlanRoute plan="normal-workouts">
       <UserLayout>
         <WorkoutList />
       </UserLayout>
-    </ProtectedRoute>
+    </PlanRoute>
   }
 />
 
 <Route
   path="/workout-detail/:part/:id"
   element={
-    <ProtectedRoute>
+    <PlanRoute anyPlans={["normal-workouts", "home-workout"]}>
       <UserLayout>
         <WorkoutDetail />
       </UserLayout>
-    </ProtectedRoute>
+    </PlanRoute>
   }
 />
 <Route

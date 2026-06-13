@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreditCard, ShieldCheck } from "lucide-react";
 import api from "../api/api";
+import { getPlanDetails, normalizePlan } from "../utils/planAccess";
+import { detectClientCountry, fetchCurrencyPricing } from "../utils/currency";
 
 function getStoredUser() {
   try {
@@ -18,31 +20,50 @@ function DummyRazorpay() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pricing, setPricing] = useState(null);
 
-  const normalizedProgram = String(program || "")
-    .trim()
-    .toLowerCase();
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchCurrencyPricing(api).then((data) => {
+      if (!cancelled) setPricing(data);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const normalizedProgram = normalizePlan(program) || "normal-workouts";
 
   const planDetails = {
+    pte: {
+      title: "Personal Training",
+      amount: getPlanDetails("personal-training").price,
+    },
+    "personal-training": {
+      title: "Personal Training",
+      amount: getPlanDetails("personal-training").price,
+    },
     normal: {
       title: "Normal Workout",
-      amount: "₹80",
+      amount: getPlanDetails("normal-workouts").price,
     },
     "normal-workout": {
       title: "Normal Workout",
-      amount: "₹80",
+      amount: getPlanDetails("normal-workouts").price,
     },
     "normal-workouts": {
       title: "Normal Workout",
-      amount: "₹80",
+      amount: getPlanDetails("normal-workouts").price,
     },
     home: {
       title: "Home Workout",
-      amount: "₹150",
+      amount: getPlanDetails("home-workout").price,
     },
     "home-workout": {
       title: "Home Workout",
-      amount: "₹150",
+      amount: getPlanDetails("home-workout").price,
     },
   };
 
@@ -50,6 +71,8 @@ function DummyRazorpay() {
     title: "Normal Workout",
     amount: "₹80",
   };
+
+  const displayAmount = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.amount;
 
   const startPayment = async () => {
     setLoading(true);
@@ -60,11 +83,16 @@ function DummyRazorpay() {
 
       const orderRes = await api.post("/payments/create-order", {
         program: normalizedProgram,
+        country: pricing?.country || (await detectClientCountry()),
       });
 
       const { orderId, amount, currency, keyId, planTitle } = orderRes.data;
 
       const user = getStoredUser();
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay script is not loaded. Please refresh and try again.");
+      }
 
       const options = {
         key: keyId,
@@ -94,12 +122,7 @@ function DummyRazorpay() {
             localStorage.setItem("buddyPaymentStatus", "paid");
             localStorage.removeItem("buddyPendingProgram");
 
-            if (verifyRes.data.program === "home-workout") {
-              navigate("/home-workout-setup");
-              return;
-            }
-
-            navigate("/workouts");
+            navigate(verifyRes.data.redirectPath || "/workouts", { replace: true });
           }
         },
         modal: {
@@ -139,7 +162,7 @@ function DummyRazorpay() {
 
         <div className="razorpay-summary">
           <span>Amount</span>
-          <strong>{selectedPlan.amount}</strong>
+          <strong>{displayAmount}</strong>
         </div>
 
         <div className="secure-row">

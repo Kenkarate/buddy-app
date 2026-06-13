@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap");
+
 * {
   box-sizing: border-box;
 }
@@ -11,12 +13,32 @@
   --text: #ffffff;
   --muted: #9ca3af;
   --border: rgba(244, 63, 70, 0.65);
+  --elite-lime: #f8d75d;
+  --elite-lime-2: #f8d75d;
+  --elite-muted: #a7aaa4;
+}
+
+:root[data-theme="light"] {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --card: #f4f5f7;
+  --text: #111827;
+  --muted: #5b6472;
+  --border: rgba(239, 29, 39, 0.28);
+  --elite-lime: #b98700;
+  --elite-lime-2: #b98700;
+  --elite-muted: #5f6671;
+  --elite-bg: #f5f6f8;
+  --elite-panel: #ffffff;
+  --elite-panel-2: #ffffff;
+  --elite-text: #111827;
+  --elite-line: rgba(17, 24, 39, 0.1);
 }
 
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #000;
+  font-family: "Montserrat", Arial, Helvetica, sans-serif;
+  background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
@@ -58,6 +80,65 @@ a {
   min-height: 100vh;
   background: linear-gradient(180deg, #171820 0%, #08090c 100%);
   position: relative;
+}
+
+:root[data-theme="light"] .mobile-shell,
+:root[data-theme="light"] .home-screen,
+:root[data-theme="light"] .auth-page,
+:root[data-theme="light"] .premium-bmi-page,
+:root[data-theme="light"] .premium-diet-page,
+:root[data-theme="light"] .premium-payment-page,
+:root[data-theme="light"] .home-workout-setup-page,
+:root[data-theme="light"] .dummy-razorpay-page,
+:root[data-theme="light"] .elite-profile-page {
+  background: linear-gradient(180deg, #ffffff 0%, #eef1f5 100%);
+  color: var(--text);
+}
+
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .profile-card,
+:root[data-theme="light"] .chart-card,
+:root[data-theme="light"] .result-card,
+:root[data-theme="light"] .empty-card,
+:root[data-theme="light"] .warning-card,
+:root[data-theme="light"] .payment-card,
+:root[data-theme="light"] .hero-card,
+:root[data-theme="light"] .diet-card,
+:root[data-theme="light"] .workout-card,
+:root[data-theme="light"] .elite-profile-card,
+:root[data-theme="light"] .elite-form-card,
+:root[data-theme="light"] .trainer-note-card,
+:root[data-theme="light"] .faq-item,
+:root[data-theme="light"] .premium-bmi-form,
+:root[data-theme="light"] .premium-price-card,
+:root[data-theme="light"] .home-plan-day-card,
+:root[data-theme="light"] .daily-workout-main-card {
+  background: #ffffff;
+  color: #111827;
+  border-color: rgba(17, 24, 39, 0.1);
+  box-shadow: 0 14px 35px rgba(17, 24, 39, 0.08);
+}
+
+:root[data-theme="light"] input,
+:root[data-theme="light"] textarea,
+:root[data-theme="light"] select,
+:root[data-theme="light"] .elite-form-card input,
+:root[data-theme="light"] .elite-form-card textarea,
+:root[data-theme="light"] .readonly-input {
+  background: #f3f4f6;
+  color: #111827;
+  border-color: rgba(17, 24, 39, 0.12);
+}
+
+:root[data-theme="light"] .profile-title,
+:root[data-theme="light"] .profile-info-block h2,
+:root[data-theme="light"] .profile-info-block h3,
+:root[data-theme="light"] .section-heading-row,
+:root[data-theme="light"] .faq-question,
+:root[data-theme="light"] .radio-row label,
+:root[data-theme="light"] .trainer-note-card h3,
+:root[data-theme="light"] .trainer-note-card strong {
+  color: #111827;
 }
 
 .route-loading-bar {
@@ -1449,6 +1530,38 @@ button {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.theme-toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.theme-toggle-row button {
+  min-height: 44px;
+  padding: 0.72rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--elite-text);
+  border: 1px solid var(--elite-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.theme-toggle-row button.active {
+  background: var(--elite-lime);
+  color: #111;
+  border-color: transparent;
+}
+
+:root[data-theme="light"] .membership-pill {
+  background: #111827;
+  color: #fff;
 }
 
 .section-heading-row {
@@ -5141,7 +5254,7 @@ button {
   background: rgba(13, 14, 18, 0.96);
   border-top: 1px solid rgba(239, 29, 39, 0.25);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   z-index: 30;
   backdrop-filter: blur(18px);
 }
@@ -5345,6 +5458,13 @@ button {
 .admin-week-days small {
   color: inherit;
   opacity: 0.76;
+}
+
+.admin-helper-text {
+  margin: 0.25rem 0 1rem;
+  color: #a1a1aa;
+  font-size: 0.86rem;
+  line-height: 1.5;
 }
 
 .admin-search-box {
@@ -5833,6 +5953,10 @@ button {
 .admin-selected-row textarea {
   min-height: 64px;
   margin: 0.65rem 0 0;
+}
+
+.weekly-fixed-card {
+  margin: 0.9rem 0;
 }
 
 .admin-empty-box {

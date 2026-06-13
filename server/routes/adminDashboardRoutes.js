@@ -10,16 +10,6 @@ const adminOnly = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
-const dayNames = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
 function startOfWeek(dateKey) {
   const date = dateKey ? new Date(`${dateKey}T00:00:00`) : new Date();
   const day = date.getDay();
@@ -33,6 +23,17 @@ function toDateKey(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function addDays(dateKey, amount) {
+  const date = new Date(`${dateKey}T00:00:00`);
+  date.setDate(date.getDate() + amount);
+  return toDateKey(date);
+}
+
+function isSunday(dateKey) {
+  if (!dateKey) return false;
+  return new Date(`${dateKey}T00:00:00`).getDay() === 0;
 }
 
 function cleanExercise(exercise = {}) {
@@ -65,19 +66,27 @@ function cleanDailyPayload(body = {}, userId) {
   };
 }
 
-function defaultWeekDays(weekStartDate) {
-  const start = new Date(`${weekStartDate}T00:00:00`);
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(start);
-    date.setDate(start.getDate() + index);
-    return {
-      dayName: dayNames[date.getDay()],
-      date: toDateKey(date),
-      bodyPart: "",
-      title: "",
-      exercises: [],
-    };
-  });
+function cleanWeeklyPayload(body = {}, userId) {
+  const weekSundayDate = body.weekSundayDate || body.weekStartDate;
+
+  if (!isSunday(weekSundayDate)) {
+    const error = new Error("Weekly workout can only be assigned on a Sunday date.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const bodyPart = body.bodyPart || "Full Body";
+
+  return {
+    weekSundayDate,
+    weekStartDate: addDays(weekSundayDate, 1),
+    weekEndDate: addDays(weekSundayDate, 7),
+    bodyPart,
+    title: body.title || `${bodyPart} Weekly Workout`,
+    exercises: Array.isArray(body.exercises) ? body.exercises.map(cleanExercise) : [],
+    isActive: body.isActive !== false,
+    createdBy: userId,
+  };
 }
 
 async function logAdminEvent(req, workoutName) {
@@ -282,49 +291,69 @@ router.delete("/daily-workout/:id", protect, adminOnly, async (req, res) => {
 
 router.get("/weekly-workout", protect, adminOnly, async (req, res) => {
   try {
-    const weekStartDate = req.query.weekStartDate || startOfWeek();
-    const plan = await WeeklyWorkoutPlan.findOne({ weekStartDate });
-    res.json(plan || { weekStartDate, days: defaultWeekDays(weekStartDate) });
+    const weekSundayDate = req.query.weekSundayDate || req.query.weekStartDate;
+
+    if (!weekSundayDate || !isSunday(weekSundayDate)) {
+      return res.status(400).json({
+        message: "Select a Sunday date to load a weekly workout.",
+      });
+    }
+
+    const plan = await WeeklyWorkoutPlan.findOne({ weekSundayDate });
+    res.json(plan);
   } catch (error) {
     res.status(500).json({ message: "Failed to load weekly workout" });
   }
 });
 
+router.get("/weekly-workouts", protect, adminOnly, async (req, res) => {
+  try {
+    const month = req.query.month || toDateKey().slice(0, 7);
+    const plans = await WeeklyWorkoutPlan.find({
+      weekSundayDate: { $regex: `^${month}` },
+    }).sort({ weekSundayDate: 1 });
+
+    res.json({ plans });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to load weekly workouts" });
+  }
+});
+
 router.post("/weekly-workout", protect, adminOnly, async (req, res) => {
   try {
-    const weekStartDate = req.body.weekStartDate || startOfWeek();
-    const days = Array.isArray(req.body.days)
-      ? req.body.days.map((day) => ({
-          dayName: day.dayName,
-          date: day.date,
-          bodyPart: day.bodyPart || "",
-          title: day.title || "",
-          exercises: Array.isArray(day.exercises) ? day.exercises.map(cleanExercise) : [],
-        }))
-      : defaultWeekDays(weekStartDate);
-
+    const payload = cleanWeeklyPayload(req.body, req.user.id);
     const plan = await WeeklyWorkoutPlan.findOneAndUpdate(
-      { weekStartDate },
-      { weekStartDate, days, createdBy: req.user.id },
+      {
+        $or: [
+          { weekSundayDate: payload.weekSundayDate },
+          { weekStartDate: payload.weekStartDate },
+        ],
+      },
+      payload,
       { upsert: true, new: true, runValidators: true }
     );
 
     res.status(201).json(plan);
   } catch (error) {
     console.error("SAVE WEEKLY WORKOUT ERROR:", error);
-    res.status(500).json({ message: "Failed to save weekly workout" });
+    res.status(error.statusCode || 500).json({
+      message: error.message || "Failed to save weekly workout",
+    });
   }
 });
 
 router.put("/weekly-workout/:id", protect, adminOnly, async (req, res) => {
   try {
-    const plan = await WeeklyWorkoutPlan.findByIdAndUpdate(req.params.id, req.body, {
+    const payload = cleanWeeklyPayload(req.body, req.user.id);
+    const plan = await WeeklyWorkoutPlan.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     });
     res.json(plan);
   } catch (error) {
-    res.status(500).json({ message: "Failed to update weekly workout" });
+    res.status(error.statusCode || 500).json({
+      message: error.message || "Failed to update weekly workout",
+    });
   }
 });
 
@@ -367,6 +396,8 @@ router.get("/users", protect, adminOnly, async (req, res) => {
           email: user.email,
           subscriptionStatus: user.subscriptionStatus,
           selectedProgram: user.selectedProgram,
+          selectedPlan: user.selectedPlan,
+          purchasedPlans: user.purchasedPlans || [],
           joinedDate: user.createdAt,
           workoutsViewed: stats.viewed || 0,
           workoutsCompleted: stats.completed || 0,

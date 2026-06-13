@@ -75,11 +75,44 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    selectedPlan: {
+      type: String,
+      enum: ["personal-training", "normal-workouts", "home-workout", ""],
+      default: "",
+    },
+
     subscriptionStatus: {
       type: String,
-      enum: ["none", "paid", "expired"],
+      enum: ["none", "trial", "paid", "expired"],
       default: "none",
     },
+
+    paymentStatus: {
+      type: String,
+      enum: ["none", "paid", "expired", "failed"],
+      default: "none",
+    },
+
+    purchasedPlans: [
+      {
+        plan: {
+          type: String,
+          enum: ["personal-training", "normal-workouts", "home-workout"],
+          required: true,
+        },
+        paymentStatus: {
+          type: String,
+          enum: ["paid", "expired", "failed", "refunded"],
+          default: "paid",
+        },
+        paymentId: String,
+        orderId: String,
+        purchaseDate: Date,
+        planExpiryDate: Date,
+        amount: Number,
+        currency: String,
+      },
+    ],
 
     subscriptionStartedAt: {
       type: Date,

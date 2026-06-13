@@ -9,9 +9,17 @@ import {
   KeyRound,
   Mail,
   Shield,
-  Download
+  Download,
+  Moon,
+  Sun
 } from "lucide-react";
 import api from "../api/api";
+
+const planLabels = {
+  "normal-workouts": "Normal Workout",
+  "home-workout": "Home Workout",
+  "personal-training": "Personal Training",
+};
 
 function getStoredUser() {
   try {
@@ -31,6 +39,7 @@ function Profile() {
   const [openFaq, setOpenFaq] = useState(0);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("buddyTheme") || "dark");
 
   const [queryForm, setQueryForm] = useState({
     type: "Query",
@@ -48,12 +57,18 @@ function Profile() {
   const storedUser = getStoredUser();
 const userEmail = profile?.email || storedUser?.email || "";
 const userName = profile?.name || storedUser?.name || "Buddy User";
+const selectedWorkout =
+  planLabels[profile?.selectedPlan] ||
+  planLabels[profile?.selectedProgram] ||
+  planLabels[storedUser?.selectedPlan] ||
+  planLabels[storedUser?.selectedProgram] ||
+  "No workout chosen";
 const membershipTier =
   profile?.subscriptionStatus === "paid"
-    ? "Premium"
+    ? selectedWorkout
     : profile?.subscriptionStatus === "trial"
-    ? "Trial"
-    : "Basic";
+    ? `${selectedWorkout} Trial`
+    : selectedWorkout;
 
 const loadProfile = async () => {
   try {
@@ -85,6 +100,11 @@ const loadProfile = async () => {
 
   run();
 }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("buddyTheme", theme);
+  }, [theme]);
 
   const logout = () => {
   localStorage.removeItem("buddyToken");
@@ -131,17 +151,17 @@ const loadProfile = async () => {
         "Buddy Elite is a premium fitness platform that provides curated workout programs, exercise libraries, diet guidance and personalized training support to help you reach your fitness goals.",
     },
     {
-      question: "What does Premium membership include?",
+      question: "What does Personal Training include?",
       answer:
-        "Premium membership can include advanced workout plans, trainer-assigned diet plans, progress tracking, body metrics and access to premium workout sections.",
+        "Personal Training includes trainer-guided workout support, diet guidance, progress tracking and help choosing the right plan for your goal.",
     },
     {
-      question: "How do I upgrade to Premium?",
+      question: "How do I take Personal Training?",
       answer:
-        "Tap the Upgrade to Premium button below and choose your training plan. You can start with a trial before moving to a paid plan.",
+        "Tap the Take Personal Training button below and continue with the Personal Training plan.",
     },
     {
-      question: "Can I cancel my Premium subscription?",
+      question: "Can I cancel my Personal Training subscription?",
       answer:
         "Yes. Once real payments are connected, cancellation options can be added from the payment provider dashboard or inside the app.",
     },
@@ -229,6 +249,28 @@ if (profileLoading && !profile && !userEmail) {
         <div className="profile-info-block">
           <p>Membership Tier</p>
         <span className="membership-pill">{membershipTier}</span>
+        </div>
+
+        <div className="profile-info-block">
+          <p>Theme</p>
+          <div className="theme-toggle-row">
+            <button
+              type="button"
+              className={theme === "dark" ? "active" : ""}
+              onClick={() => setTheme("dark")}
+            >
+              <Moon size={17} />
+              Dark
+            </button>
+            <button
+              type="button"
+              className={theme === "light" ? "active" : ""}
+              onClick={() => setTheme("light")}
+            >
+              <Sun size={17} />
+              White
+            </button>
+          </div>
         </div>
 
         <div className="profile-info-block">
@@ -433,7 +475,7 @@ if (profileLoading && !profile && !userEmail) {
       </section>
 
       <button className="upgrade-premium-btn" onClick={upgradePremium}>
-        Upgrade to Premium
+        Take Personal Training
       </button>
 
      <button onClick={logout}>Sign Out</button>

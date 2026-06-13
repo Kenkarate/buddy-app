@@ -1,14 +1,33 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, Crown, Dumbbell } from "lucide-react";
+import { useEffect, useState } from "react";
+import api from "../api/api";
+import { getPlanDetails, normalizePlan } from "../utils/planAccess";
+import { fetchCurrencyPricing } from "../utils/currency";
 
 function Payment() {
   const navigate = useNavigate();
   const { program } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [pricing, setPricing] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchCurrencyPricing(api).then((data) => {
+      if (!cancelled) setPricing(data);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const planDetails = {
     "personal-training": {
       title: "Personal Training",
-      price: "₹999",
+      price: getPlanDetails("personal-training").price,
       description: "Trainer-guided workout and personal diet support.",
       benefits: [
         "Personal workout plan",
@@ -19,7 +38,7 @@ function Payment() {
     },
     "normal-workouts": {
       title: "Normal Workout",
-      price: "₹499",
+      price: getPlanDetails("normal-workouts").price,
       description: "Gym workout plans with all body-part sessions.",
       benefits: [
         "Chest, back, legs, shoulders, arms and core",
@@ -30,7 +49,7 @@ function Payment() {
     },
     "home-workout": {
   title: "Home Workout",
-  price: "₹299",
+  price: getPlanDetails("home-workout").price,
   description: "Home workout suggestions based on your available equipment.",
   benefits: [
     "Equipment-based workout suggestions",
@@ -41,24 +60,53 @@ function Payment() {
 },
   };
 
-  const selectedPlan = planDetails[program] || planDetails["normal-workouts"];
+  const normalizedProgram = normalizePlan(program) || "normal-workouts";
+  const selectedPlan = planDetails[normalizedProgram] || planDetails["normal-workouts"];
+  const displayPrice = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.price;
 
-  const proceedToPay = () => {
-    navigate(`/razorpay/${program}`);
+  const proceedToPay = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      localStorage.setItem("buddyPendingProgram", normalizedProgram);
+      const res = await api.post("/payments/select-plan", {
+        program: normalizedProgram,
+      });
+
+      if (res.data.user) {
+        localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
+      }
+
+      if (res.data.purchased) {
+        localStorage.removeItem("buddyPendingProgram");
+        localStorage.setItem("buddySelectedProgram", res.data.program);
+        localStorage.setItem("buddyPaymentStatus", "paid");
+        navigate(res.data.redirectPath, { replace: true });
+        return;
+      }
+
+      navigate(`/razorpay/${normalizedProgram}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to open payment. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="premium-payment-page">
       <div className="payment-hero-premium">
         <Crown size={36} />
-        <p>Buddy Premium</p>
+        <p>Buddy Training</p>
         <h1>{selectedPlan.title}</h1>
         <span>{selectedPlan.description}</span>
       </div>
 
       <div className="premium-price-card">
         <Dumbbell size={30} />
-        <h2>{selectedPlan.price}</h2>
+        <h2>{displayPrice}</h2>
         <p>One-time dummy payment for testing.</p>
 
         <div className="premium-benefits">
@@ -70,7 +118,11 @@ function Payment() {
           ))}
         </div>
 
-        <button onClick={proceedToPay}>Proceed to Pay</button>
+        {error && <p className="error">{error}</p>}
+
+        <button onClick={proceedToPay} disabled={loading}>
+          {loading ? "Checking plan..." : "Proceed to Pay"}
+        </button>
       </div>
     </div>
   );

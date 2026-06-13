@@ -21,15 +21,10 @@ router.post("/start-trial", protect, async (req, res) => {
 });
 
 router.post("/mock-payment-success", protect, async (req, res) => {
-  const user = await User.findByIdAndUpdate(
-    req.user.id,
-    {
-      subscriptionStatus: "paid",
-    },
-    { new: true }
-  ).select("-password");
-
-  res.json(user);
+  res.status(410).json({
+    message:
+      "Mock payment is disabled. Use /api/payments/create-order and /api/payments/verify.",
+  });
 });
 
 module.exports = router;

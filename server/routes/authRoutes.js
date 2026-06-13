@@ -14,6 +14,21 @@ const createToken = (userId) => {
 };
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+function serializeUser(user) {
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    selectedProgram: user.selectedProgram,
+    selectedPlan: user.selectedPlan,
+    subscriptionStatus: user.subscriptionStatus,
+    paymentStatus: user.paymentStatus,
+    purchasedPlans: user.purchasedPlans || [],
+    avatarUrl: user.avatarUrl,
+  };
+}
+
 function parseRequestBody(body) {
   if (!body) return {};
 
@@ -54,22 +69,15 @@ const normalizedEmail = email.trim().toLowerCase();
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      name:normalizedEmail,
-      email,
+      name: name || normalizedEmail,
+      email: normalizedEmail,
       password: hashedPassword,
       role: "user",
     });
 
     res.status(201).json({
       token: createToken(user._id),
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        selectedProgram: user.selectedProgram,
-        subscriptionStatus: user.subscriptionStatus,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     res.status(500).json({ message: "Registration failed" });
@@ -115,14 +123,7 @@ const password = parsedBody?.password;
 
     res.json({
       token: createToken(user._id),
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        selectedProgram: user.selectedProgram,
-        subscriptionStatus: user.subscriptionStatus,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -299,15 +300,7 @@ router.post("/google", async (req, res) => {
 
     res.json({
       token: createToken(user._id),
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        selectedProgram: user.selectedProgram,
-        subscriptionStatus: user.subscriptionStatus,
-        avatarUrl: user.avatarUrl,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     console.error("GOOGLE LOGIN ERROR:", error);

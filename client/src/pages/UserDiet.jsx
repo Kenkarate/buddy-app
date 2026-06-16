@@ -157,7 +157,7 @@ function UserDiet() {
                           </span>
                         </div>
                         <p>
-                          {food.adjustedCalories ?? food.calories} kcal · P {food.adjustedProtein ?? food.protein}g · C {food.adjustedCarbs ?? food.carbs}g · F {food.adjustedFats ?? food.fats ?? food.fat}g
+                          {food.adjustedCalories ?? food.calories} kcal - P {food.adjustedProtein ?? food.protein}g - C {food.adjustedCarbs ?? food.carbs}g - F {food.adjustedFats ?? food.fats ?? food.fat}g
                         </p>
                         {food.notes && <small>{food.notes}</small>}
                       </div>

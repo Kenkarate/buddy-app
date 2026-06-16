@@ -9,6 +9,12 @@ function Home() {
 
  const chooseProgram = async (program) => {
   const normalizedProgram = normalizePlan(program);
+
+  if (normalizedProgram === "personal-training") {
+    navigate("/coming-soon");
+    return;
+  }
+
   localStorage.setItem("buddyPendingProgram", normalizedProgram);
 
   const token = localStorage.getItem("buddyToken");
@@ -25,7 +31,7 @@ function Home() {
       navigate,
       program: normalizedProgram,
     });
-  } catch (error) {
+  } catch {
     navigate(`/payment/${normalizedProgram}`);
   } finally {
     setLoadingProgram("");

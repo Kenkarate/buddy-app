@@ -78,7 +78,9 @@ function DailyWorkout() {
         workoutName: plan.title,
         eventType: "view",
         source: "daily",
-      }).catch(() => {});
+      }).catch((eventError) => {
+        console.error("Failed to record workout view:", eventError);
+      });
     }
   }, [plan]);
 
@@ -121,7 +123,9 @@ function DailyWorkout() {
       workoutName: exercise.name,
       eventType: "checked",
       source: "daily",
-    }).catch(() => {});
+    }).catch((eventError) => {
+      console.error("Failed to record workout completion:", eventError);
+    });
   };
 
   return (
@@ -159,7 +163,7 @@ function DailyWorkout() {
               <div className="daily-workout-exercise" key={timerId}>
                 <div className="daily-gif-box">
                   <img
-                    src={exercise.imageUrl || FALLBACK_IMAGE}
+                    src={exercise.gifUrl || exercise.imageUrl || FALLBACK_IMAGE}
                     alt={exercise.name}
                     onError={(event) => {
                       event.currentTarget.src = FALLBACK_IMAGE;

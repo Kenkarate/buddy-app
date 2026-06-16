@@ -1,4 +1,5 @@
 const express = require("express");
+const axios = require("axios");
 const DietPlan = require("../models/DietPlan");
 const FoodItem = require("../models/FoodItem");
 const UserDietAssignment = require("../models/UserDietAssignment");
@@ -53,8 +54,31 @@ function scalePlan(plan, userWeight) {
         adjustedProtein: round((food.protein || 0) * factor),
         adjustedCarbs: round((food.carbs || 0) * factor),
         adjustedFats: round((food.fats || food.fat || 0) * factor),
+        adjustedFiber: round((food.fiber || 0) * factor),
       })),
     })),
+  };
+}
+
+function normalizeFoodProduct(product) {
+  const nutriments = product.nutriments || {};
+  const name = product.product_name || product.generic_name || product.brands || "Food item";
+
+  return {
+    id: product.code || `${name}-${Math.random().toString(36).slice(2)}`,
+    name,
+    brand: product.brands || "",
+    quantity: 100,
+    unit: "g",
+    measure: "grams",
+    servingSize: product.serving_size || product.quantity || "100 g",
+    calories: round(nutriments["energy-kcal_100g"] || nutriments["energy-kcal"] || 0),
+    protein: round(nutriments.proteins_100g || nutriments.proteins || 0),
+    carbs: round(nutriments.carbohydrates_100g || nutriments.carbohydrates || 0),
+    fats: round(nutriments.fat_100g || nutriments.fat || 0),
+    fiber: round(nutriments.fiber_100g || nutriments.fiber || 0),
+    imageUrl: product.image_front_url || product.image_url || "",
+    source: "Open Food Facts",
   };
 }
 
@@ -94,6 +118,43 @@ router.get("/personalized-plans", protect, async (req, res) => {
   }
 });
 
+router.get("/nutrition/search", protect, async (req, res) => {
+  try {
+    const query = String(req.query.q || "").trim();
+
+    if (query.length < 2) {
+      return res.json({ foods: [] });
+    }
+
+    const response = await axios.get("https://world.openfoodfacts.org/cgi/search.pl", {
+      params: {
+        search_terms: query,
+        search_simple: 1,
+        action: "process",
+        json: 1,
+        page_size: 8,
+        fields:
+          "code,product_name,generic_name,brands,nutriments,image_front_url,image_url,serving_size,quantity",
+      },
+      timeout: 9000,
+      headers: {
+        "User-Agent": "BuddyFitnessApp/1.0 (admin nutrition lookup)",
+      },
+    });
+
+    const foods = (response.data.products || [])
+      .map(normalizeFoodProduct)
+      .filter((food) => food.name && (food.calories || food.protein || food.carbs || food.fats));
+
+    res.json({ foods });
+  } catch (error) {
+    console.error("FOOD NUTRITION SEARCH ERROR:", error.message);
+    res.status(502).json({
+      message: "Could not fetch nutrition data right now. Please enter the food manually.",
+    });
+  }
+});
+
 router.put("/base-plans/:goal", protect, adminOnly, async (req, res) => {
   try {
     const goal = req.params.goal;
@@ -124,6 +185,23 @@ router.put("/base-plans/:goal", protect, adminOnly, async (req, res) => {
   } catch (error) {
     console.error("SAVE BASE DIET PLAN ERROR:", error);
     res.status(500).json({ message: error.message || "Failed to save diet plan" });
+  }
+});
+
+router.delete("/base-plans/:goal", protect, adminOnly, async (req, res) => {
+  try {
+    const goal = req.params.goal;
+
+    if (!["cutting", "bulking"].includes(goal)) {
+      return res.status(400).json({ message: "Diet type must be cutting or bulking" });
+    }
+
+    await DietPlan.updateMany({ goal, isActive: true }, { isActive: false });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("DELETE BASE DIET PLAN ERROR:", error);
+    res.status(500).json({ message: error.message || "Failed to delete diet plan" });
   }
 });
 

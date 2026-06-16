@@ -14,13 +14,13 @@ const paymentSchema = new mongoose.Schema(
 
     currency: {
       type: String,
-      default: "SAR",
+      default: "INR",
     },
 
     status: {
       type: String,
-     enum: ["none", "paid", "expired"],
-      default: "trial",
+      enum: ["none", "trial", "paid", "expired"],
+      default: "none",
     },
 
     trialStartedAt: Date,

@@ -73,6 +73,40 @@ a {
   color: inherit;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-loading-fallback {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(248, 215, 93, 0.2);
+  border-top-color: var(--elite-lime, #f8d75d);
+  animation: page-loading-spin 0.7s linear infinite;
+}
+
+@keyframes page-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .mobile-shell {
   max-width: 430px;
   margin: 0 auto;
@@ -350,6 +384,11 @@ button {
 
 .error {
   color: #ff6b6b;
+  font-weight: 800;
+}
+
+.form-success {
+  color: #4ade80;
   font-weight: 800;
 }
 
@@ -2890,11 +2929,11 @@ button {
   background: #2563eb;
   color: #fff;
 }
-/* Normal Workout 2 Column Grid */
+/* Normal Workout 1 Column Grid */
 
 .normal-part-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   gap: 14px;
 }
 
@@ -5200,10 +5239,11 @@ button {
   max-width: 430px;
   min-height: 100vh;
   margin: 0 auto;
-  padding: 18px 14px 108px;
+  padding: 20px 16px 32px;
   background:
-    radial-gradient(circle at top right, rgba(239, 29, 39, 0.16), transparent 34%),
-    linear-gradient(180deg, #111218 0%, #050506 100%);
+    radial-gradient(circle at top right, rgba(45, 212, 191, 0.14), transparent 32%),
+    radial-gradient(circle at top left, rgba(255, 70, 85, 0.12), transparent 34%),
+    linear-gradient(180deg, #111827 0%, #070a12 58%, #04060b 100%);
   color: #fff;
 }
 
@@ -5212,13 +5252,14 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  padding: 4px 2px 0;
 }
 
 .admin-mobile-header p,
 .admin-step-label,
 .admin-section-head p {
-  color: #ef1d27;
+  color: #2dd4bf;
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -5227,18 +5268,19 @@ button {
 }
 
 .admin-mobile-header h1 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   line-height: 1;
   margin: 0;
   text-transform: uppercase;
 }
 
 .admin-mobile-header button {
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   display: grid;
   place-items: center;
 }
@@ -5250,11 +5292,12 @@ button {
   transform: translateX(-50%);
   max-width: 430px;
   width: 100%;
-  height: 82px;
-  background: rgba(13, 14, 18, 0.96);
-  border-top: 1px solid rgba(239, 29, 39, 0.25);
+  height: 78px;
+  background: rgba(7, 10, 18, 0.94);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 -18px 38px rgba(0, 0, 0, 0.34);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   z-index: 30;
   backdrop-filter: blur(18px);
 }
@@ -5264,20 +5307,21 @@ button {
   place-items: center;
   align-content: center;
   gap: 4px;
-  color: #8d94a3;
+  color: #7f8aa0;
   text-decoration: none;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 800;
+  padding: 0 2px;
 }
 
 .admin-footer-item.active {
-  color: #ef1d27;
+  color: #2dd4bf;
 }
 
 .admin-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
+  gap: 0.85rem;
 }
 
 .admin-stat-grid.compact {
@@ -5293,26 +5337,26 @@ button {
 .admin-panel-card,
 .admin-flow-card,
 .admin-selected-dock {
-  border: 1px solid rgba(239, 29, 39, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 24px;
-  background: rgba(18, 19, 25, 0.9);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  background: rgba(17, 23, 35, 0.92);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
 }
 
 .admin-stat-tile {
-  min-height: 116px;
-  padding: 1rem;
+  min-height: 112px;
+  padding: 0.95rem;
   display: grid;
   gap: 0.45rem;
   align-content: center;
 }
 
 .admin-stat-tile svg {
-  color: #ef1d27;
+  color: #2dd4bf;
 }
 
 .admin-stat-tile strong {
-  font-size: 1.65rem;
+  font-size: 1.55rem;
 }
 
 .admin-stat-tile span,
@@ -5327,7 +5371,7 @@ button {
 .admin-flow-card,
 .admin-selected-dock {
   padding: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.95rem;
 }
 
 .admin-section-head h2,
@@ -5349,8 +5393,8 @@ button {
 .admin-progress-list > div,
 .admin-activity-list article,
 .admin-user-list button {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 18px;
   padding: 0.9rem;
 }
@@ -5374,12 +5418,12 @@ button {
   height: 10px;
   flex: 0 0 10px;
   border-radius: 999px;
-  background: #ef1d27;
+  background: #2dd4bf;
 }
 
 .admin-user-list button {
   width: 100%;
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.055);
   color: #fff;
   text-transform: none;
   letter-spacing: 0;
@@ -5389,7 +5433,7 @@ button {
 }
 
 .admin-user-list svg {
-  color: #ef1d27;
+  color: #2dd4bf;
   flex: 0 0 auto;
 }
 
@@ -5407,23 +5451,94 @@ button {
   white-space: nowrap;
 }
 
+.admin-support-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.admin-support-list article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  padding: 0.9rem;
+}
+
+.admin-support-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.admin-support-type {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(45, 212, 191, 0.12);
+  color: #2dd4bf;
+}
+
+.admin-support-list select {
+  margin: 0;
+  min-height: 36px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.admin-support-list p {
+  margin: 0;
+  color: #d1d5db;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.admin-support-list small {
+  color: #9ca3af;
+}
+
 .admin-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
   border-radius: 18px;
   margin: 0 0 1rem;
   padding: 0.9rem;
   font-weight: 800;
 }
 
+.admin-notice-dismiss {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  font-weight: 800;
+  padding: 0 0.25rem;
+  flex-shrink: 0;
+}
+
 .admin-notice.error {
-  background: rgba(239, 29, 39, 0.12);
-  border: 1px solid rgba(239, 29, 39, 0.32);
-  color: #fecaca;
+  background: rgba(255, 70, 85, 0.12);
+  border: 1px solid rgba(255, 70, 85, 0.28);
+  color: #ffd0d4;
 }
 
 .admin-notice.success {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.28);
-  color: #bbf7d0;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  color: #b8fff5;
 }
 
 .admin-chip-grid,
@@ -5444,8 +5559,8 @@ button {
 
 .admin-chip-grid button.active,
 .admin-week-days button.active {
-  background: #ef1d27;
-  color: #fff;
+  background: #2dd4bf;
+  color: #06111a;
 }
 
 .admin-week-days button {
@@ -5497,7 +5612,7 @@ button {
   overflow: hidden;
   min-height: 208px;
   padding: 0;
-  border: 1px solid rgba(239, 29, 39, 0.28);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 22px;
   background: #08090c;
   text-align: left;
@@ -5506,8 +5621,8 @@ button {
 }
 
 .admin-exercise-picker button.selected {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.16);
+  border-color: #2dd4bf;
+  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.16);
 }
 
 .admin-exercise-picker img {
@@ -5525,7 +5640,7 @@ button {
 }
 
 .admin-exercise-picker span {
-  color: #ef1d27;
+  color: #2dd4bf;
   font-size: 0.68rem;
   margin-top: 0.65rem;
   text-transform: uppercase;
@@ -5548,7 +5663,8 @@ button {
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  background: #ef1d27;
+  background: #2dd4bf;
+  color: #06111a;
   display: grid;
   place-items: center;
 }
@@ -5593,8 +5709,8 @@ button {
   width: 42px;
   height: 42px;
   padding: 0;
-  background: rgba(239, 29, 39, 0.14);
-  color: #fecaca;
+  background: rgba(255, 70, 85, 0.14);
+  color: #ffd0d4;
 }
 
 .admin-mini-fields {
@@ -5692,8 +5808,8 @@ button {
 }
 
 .admin-calendar-grid article.assigned {
-  border-color: rgba(34, 197, 94, 0.45);
-  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(45, 212, 191, 0.42);
+  background: rgba(45, 212, 191, 0.08);
 }
 
 .admin-calendar-grid article > button {
@@ -5740,8 +5856,8 @@ button {
 }
 
 .admin-calendar-list article.assigned {
-  border-color: rgba(34, 197, 94, 0.45);
-  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(45, 212, 191, 0.42);
+  background: rgba(45, 212, 191, 0.08);
 }
 
 .admin-calendar-list strong,
@@ -5777,8 +5893,8 @@ button {
 }
 
 .admin-calendar-actions button:last-child {
-  color: #fecaca;
-  background: rgba(239, 29, 39, 0.16);
+  color: #ffd0d4;
+  background: rgba(255, 70, 85, 0.14);
 }
 
 .admin-wizard-progress {
@@ -5795,7 +5911,7 @@ button {
 }
 
 .admin-wizard-progress span.active {
-  background: #ef1d27;
+  background: #2dd4bf;
 }
 
 .admin-wizard-actions {
@@ -5807,7 +5923,7 @@ button {
   gap: 0.75rem;
   padding: 0.75rem;
   margin-top: 1rem;
-  border: 1px solid rgba(239, 29, 39, 0.2);
+  border: 1px solid rgba(45, 212, 191, 0.18);
   border-radius: 22px;
   background: rgba(12, 13, 18, 0.96);
   backdrop-filter: blur(18px);
@@ -5837,7 +5953,7 @@ button {
 
 .admin-workout-preview {
   overflow: hidden;
-  border: 1px solid rgba(239, 29, 39, 0.24);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 24px;
   background: #08090c;
   margin-bottom: 1rem;
@@ -5856,7 +5972,7 @@ button {
 }
 
 .admin-workout-preview p {
-  color: #ef1d27;
+  color: #2dd4bf;
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -5888,8 +6004,8 @@ button {
   padding: 0.9rem;
   margin-bottom: 1rem;
   border-radius: 18px;
-  background: rgba(239, 29, 39, 0.11);
-  border: 1px solid rgba(239, 29, 39, 0.2);
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.18);
 }
 
 .admin-review-summary span {
@@ -5944,8 +6060,8 @@ button {
   width: 42px;
   height: 42px;
   padding: 0;
-  background: rgba(239, 29, 39, 0.14);
-  color: #fecaca;
+  background: rgba(255, 70, 85, 0.14);
+  color: #ffd0d4;
   display: grid;
   place-items: center;
 }
@@ -5983,7 +6099,7 @@ button {
   overflow: auto;
   border-radius: 28px 28px 0 0;
   background: #111218;
-  border: 1px solid rgba(239, 29, 39, 0.26);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   padding: 1rem;
   padding-top: 1.25rem;
 }
@@ -6033,7 +6149,7 @@ button {
 
 .admin-diet-meal-card,
 .admin-food-row {
-  border: 1px solid rgba(239, 29, 39, 0.22);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.045);
   padding: 0.85rem;
@@ -6055,8 +6171,8 @@ button {
   min-height: 36px;
   padding: 0;
   border-radius: 12px;
-  background: rgba(239, 29, 39, 0.16);
-  color: #fecaca;
+  background: rgba(255, 70, 85, 0.14);
+  color: #ffd0d4;
   display: grid;
   place-items: center;
 }
@@ -6137,4 +6253,282 @@ button {
   color: #d1d5db;
   font-size: 0.82rem;
   line-height: 1.5;
+}
+
+/* Home workout 30-day unlock calendar (user) */
+.home-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.home-cal-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 92px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f3f4f6;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.home-cal-day strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.home-cal-day span {
+  font-size: 0.78rem;
+  color: #d1d5db;
+}
+
+.home-cal-day small {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.home-cal-day.unlocked {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.home-cal-day.unlocked:active {
+  transform: scale(0.97);
+}
+
+.home-cal-day.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.home-cal-day .home-cal-tick {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #22c55e;
+}
+
+:root[data-theme="light"] .home-cal-day {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+  color: #111827;
+}
+
+:root[data-theme="light"] .home-cal-day span {
+  color: #4b5563;
+}
+
+:root[data-theme="light"] .home-cal-day.unlocked {
+  border-color: rgba(22, 163, 74, 0.4);
+  background: rgba(22, 163, 74, 0.08);
+}
+
+/* Admin top-right hamburger menu (replaces the old fixed footer nav) */
+.admin-nav {
+  position: relative;
+}
+
+.admin-nav-toggle {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.admin-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.admin-nav {
+  position: relative;
+}
+
+.admin-header-row-left {
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.admin-layout-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-nav-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: auto;
+  z-index: 50;
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(7, 10, 18, 0.97);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.admin-nav-item.active {
+  background: rgba(45, 212, 191, 0.14);
+  color: #2dd4bf;
+}
+
+.admin-nav-logout {
+  margin-top: 6px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0 0 12px 12px;
+  color: #fb7185;
+}
+
+.admin-nav-logout:hover {
+  background: rgba(251, 113, 133, 0.12);
+  color: #fb7185;
+}
+
+:root[data-theme="light"] .admin-nav-toggle {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+:root[data-theme="light"] .admin-nav-menu {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="light"] .admin-nav-item {
+  color: #374151;
+}
+
+:root[data-theme="light"] .admin-nav-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #111827;
+}
+
+/* Profile subscription management */
+.subscription-section {
+  margin-top: 22px;
+}
+
+.subscription-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.subscription-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.subscription-info h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.subscription-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.subscription-status.active {
+  color: #22c55e;
+}
+
+.subscription-status.cancelled {
+  color: #fbbf24;
+}
+
+.subscription-info small {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+.subscription-cancel-btn {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(251, 113, 133, 0.4);
+  background: rgba(251, 113, 133, 0.12);
+  color: #fb7185;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.subscription-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+:root[data-theme="light"] .subscription-card {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+:root[data-theme="light"] .subscription-info small {
+  color: #6b7280;
+}
+
+/* Home workout day-detail exercise rows */
+.home-exercise-row .home-exercise-chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #9ca3af;
 }

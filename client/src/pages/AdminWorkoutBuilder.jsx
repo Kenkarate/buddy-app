@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Edit, Plus, Search, Trash2 } from "lucide-react";
 import AdminShell from "../components/AdminShell";
+import SelectedWorkoutTable from "../components/SelectedWorkoutTable";
 import api from "../api/api";
-
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=900&q=80";
-
-const bodyParts = ["Chest", "Back", "Shoulder", "Arms", "Legs", "Abs", "Full Body", "Cardio"];
+import adminApi from "../api/adminApi";
+import { FALLBACK_IMAGE, bodyParts, mapExercise } from "../lib/workoutShared";
 
 function toDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -47,21 +45,6 @@ function emptyWeeklyPlan(weekSundayDate) {
     title: "Chest Weekly Workout",
     exercises: [],
     isActive: true,
-  };
-}
-
-function mapExercise(exercise) {
-  return {
-    exerciseId: exercise.exerciseId || exercise._id,
-    name: exercise.name,
-    imageUrl: exercise.imageUrls?.[0] || exercise.imageUrl || FALLBACK_IMAGE,
-    equipment: exercise.equipment || "bodyweight",
-    primaryMuscles: exercise.primaryMuscles || [exercise.bodyPart].filter(Boolean),
-    instructions: exercise.instructions || [],
-    sets: exercise.level === "expert" ? 5 : exercise.level === "intermediate" ? 4 : 3,
-    reps: exercise.level === "expert" ? "8" : exercise.level === "intermediate" ? "10" : "12",
-    rest: 60,
-    notes: "",
   };
 }
 
@@ -161,7 +144,7 @@ function AdminWorkoutBuilder({ mode }) {
     try {
       setLoading(true);
       setError("");
-      const res = await api.get(`/admin/daily-workouts?month=${monthKey}`);
+      const res = await adminApi.get(`/admin/daily-workouts?month=${monthKey}`);
       setDailyMonthPlans(res.data.plans || []);
     } catch (loadError) {
       console.error("Daily month load error:", loadError);
@@ -177,7 +160,7 @@ function AdminWorkoutBuilder({ mode }) {
     try {
       setLoading(true);
       setError("");
-      const res = await api.get(`/admin/weekly-workouts?month=${monthKey}`);
+      const res = await adminApi.get(`/admin/weekly-workouts?month=${monthKey}`);
       setWeeklyMonthPlans(res.data.plans || []);
     } catch (loadError) {
       console.error("Weekly month load error:", loadError);
@@ -201,7 +184,7 @@ function AdminWorkoutBuilder({ mode }) {
       try {
         setLoading(true);
         setError("");
-        const res = await api.get(`/admin/daily-workout?date=${selectedDate}`);
+        const res = await adminApi.get(`/admin/daily-workout?date=${selectedDate}`);
         setDailyPlan(res.data);
         setBodyPart(res.data?.bodyPart || "Chest");
         setSelectedExercises(res.data?.exercises || []);
@@ -222,7 +205,7 @@ function AdminWorkoutBuilder({ mode }) {
       try {
         setLoading(true);
         setError("");
-        const res = await api.get(`/admin/weekly-workout?weekSundayDate=${weekSundayDate}`);
+        const res = await adminApi.get(`/admin/weekly-workout?weekSundayDate=${weekSundayDate}`);
         const plan = res.data || emptyWeeklyPlan(weekSundayDate);
         setWeeklyPlan(plan);
         setBodyPart(plan?.bodyPart || "Chest");
@@ -368,8 +351,8 @@ function AdminWorkoutBuilder({ mode }) {
           isActive: true,
         };
         const res = currentPlanId
-          ? await api.put(`/admin/weekly-workout/${currentPlanId}`, payload)
-          : await api.post("/admin/weekly-workout", payload);
+          ? await adminApi.put(`/admin/weekly-workout/${currentPlanId}`, payload)
+          : await adminApi.post("/admin/weekly-workout", payload);
         setWeeklyPlan(res.data);
         await loadWeeklyMonthPlans();
         setSuccess("Weekly workout saved.");
@@ -384,8 +367,8 @@ function AdminWorkoutBuilder({ mode }) {
         exercises: selectedExercises,
       };
       const res = currentPlanId
-        ? await api.put(`/admin/daily-workout/${currentPlanId}`, payload)
-        : await api.post("/admin/daily-workout", payload);
+        ? await adminApi.put(`/admin/daily-workout/${currentPlanId}`, payload)
+        : await adminApi.post("/admin/daily-workout", payload);
       setDailyPlan(res.data);
       await loadDailyMonthPlans();
       setSuccess(currentPlanId ? "Daily workout updated." : "Daily workout saved.");
@@ -411,12 +394,12 @@ function AdminWorkoutBuilder({ mode }) {
       setSaving(true);
       setError("");
       if (isWeekly) {
-        await api.delete(`/admin/weekly-workout/${currentPlanId}`);
+        await adminApi.delete(`/admin/weekly-workout/${currentPlanId}`);
         setWeeklyPlan(emptyWeeklyPlan(weekSundayDate));
         setSelectedExercises([]);
         await loadWeeklyMonthPlans();
       } else {
-        await api.delete(`/admin/daily-workout/${currentPlanId}`);
+        await adminApi.delete(`/admin/daily-workout/${currentPlanId}`);
         setDailyPlan(null);
         setSelectedExercises([]);
         await loadDailyMonthPlans();
@@ -438,7 +421,7 @@ function AdminWorkoutBuilder({ mode }) {
     try {
       setSaving(true);
       setError("");
-      await api.delete(`/admin/daily-workout/${plan._id}`);
+      await adminApi.delete(`/admin/daily-workout/${plan._id}`);
       await loadDailyMonthPlans();
       if (selectedDate === plan.date) {
         setDailyPlan(null);
@@ -462,7 +445,7 @@ function AdminWorkoutBuilder({ mode }) {
     try {
       setSaving(true);
       setError("");
-      await api.delete(`/admin/weekly-workout/${plan._id}`);
+      await adminApi.delete(`/admin/weekly-workout/${plan._id}`);
       if (plan.weekSundayDate === weekSundayDate) {
         setWeeklyPlan(emptyWeeklyPlan(weekSundayDate));
         setSelectedExercises([]);
@@ -829,8 +812,22 @@ function AdminWorkoutBuilder({ mode }) {
 
   return (
     <AdminShell title={isWeekly ? "Weekly Workout" : "Daily Workout"}>
-      {error && <div className="admin-notice error">{error}</div>}
-      {success && <div className="admin-notice success">{success}</div>}
+      {error && (
+        <div className="admin-notice error">
+          <span>{error}</span>
+          <button type="button" className="admin-notice-dismiss" onClick={() => setError("")} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+      )}
+      {success && (
+        <div className="admin-notice success">
+          <span>{success}</span>
+          <button type="button" className="admin-notice-dismiss" onClick={() => setSuccess("")} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+      )}
 
       {step >= 0 && (
         <div className="admin-wizard-progress">
@@ -866,63 +863,6 @@ function AdminWorkoutBuilder({ mode }) {
         </div>
       )}
     </AdminShell>
-  );
-}
-
-function SelectedWorkoutTable({ bodyPart, exercises, onDelete, onUpdate }) {
-  if (exercises.length === 0) {
-    return <div className="admin-empty-box">No workouts added yet.</div>;
-  }
-
-  return (
-    <div className="admin-selected-table">
-      {exercises.map((exercise) => (
-        <article key={exercise.exerciseId} className="admin-selected-row">
-          <div className="admin-selected-row-head">
-            <img src={exercise.imageUrl || FALLBACK_IMAGE} alt={exercise.name} />
-            <div>
-              <strong>{exercise.name}</strong>
-              <span>{exercise.primaryMuscles?.join(", ") || bodyPart}</span>
-            </div>
-            <button type="button" onClick={() => onDelete(exercise.exerciseId)}>
-              <Trash2 size={18} />
-            </button>
-          </div>
-
-          <div className="admin-mini-fields">
-            <label>
-              <span>Sets</span>
-              <input
-                type="number"
-                value={exercise.sets}
-                onChange={(event) => onUpdate(exercise.exerciseId, "sets", Number(event.target.value))}
-              />
-            </label>
-            <label>
-              <span>Reps</span>
-              <input
-                value={exercise.reps}
-                onChange={(event) => onUpdate(exercise.exerciseId, "reps", event.target.value)}
-              />
-            </label>
-            <label>
-              <span>Rest</span>
-              <input
-                type="number"
-                value={exercise.rest}
-                onChange={(event) => onUpdate(exercise.exerciseId, "rest", Number(event.target.value))}
-              />
-            </label>
-          </div>
-
-          <textarea
-            value={exercise.notes}
-            onChange={(event) => onUpdate(exercise.exerciseId, "notes", event.target.value)}
-            placeholder="Trainer notes"
-          />
-        </article>
-      ))}
-    </div>
   );
 }
 

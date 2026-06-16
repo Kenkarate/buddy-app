@@ -47,9 +47,17 @@ export const PLAN_DETAILS = {
   },
 };
 
+// Plans billed as auto-renewing monthly subscriptions (vs one-time payment).
+// Must mirror SUBSCRIPTION_PROGRAMS in server/routes/paymentRoutes.js.
+export const SUBSCRIPTION_PLANS = new Set(["normal-workouts", "home-workout"]);
+
 export function normalizePlan(program) {
   const plan = PLAN_DETAILS[String(program || "").trim().toLowerCase()];
   return plan?.key || "";
+}
+
+export function isSubscriptionPlan(program) {
+  return SUBSCRIPTION_PLANS.has(normalizePlan(program));
 }
 
 export function getPlanDetails(program) {

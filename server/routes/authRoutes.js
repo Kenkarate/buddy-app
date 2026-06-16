@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/User");
 const protect = require("../middleware/authMiddleware");
+const { sendPasswordResetEmail } = require("../utils/mailer");
 const router = express.Router();
 const { OAuth2Client } = require("google-auth-library");
 
@@ -55,10 +56,25 @@ function parseRequestBody(body) {
 
 router.post("/register", async (req, res) => {
   try {
-const parsedBody = parseRequestBody(req.body);
+    const parsedBody = parseRequestBody(req.body);
 
-const { name, email, password } = parsedBody; 
-const normalizedEmail = email.trim().toLowerCase();
+    const { name, email, password } = parsedBody;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address" });
+    }
+
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({ email: normalizedEmail });
 
@@ -86,17 +102,14 @@ const normalizedEmail = email.trim().toLowerCase();
 
 router.post("/login", async (req, res) => {
   try {
-    console.log("LOGIN BODY:", req.body);
+    const parsedBody = parseRequestBody(req.body);
 
-const parsedBody = parseRequestBody(req.body);
-
-const email = parsedBody?.email;
-const password = parsedBody?.password;
+    const email = parsedBody?.email;
+    const password = parsedBody?.password;
 
     if (!email || !password) {
       return res.status(400).json({
         message: "Email and password are required",
-        receivedBody: req.body,
       });
     }
 
@@ -109,15 +122,13 @@ const password = parsedBody?.password;
 
     const user = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      console.log("User not found:", normalizedEmail);
+    if (!user || !user.password) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const passwordMatches = await bcrypt.compare(password, user.password);
 
     if (!passwordMatches) {
-      console.log("Password mismatch for:", normalizedEmail);
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
@@ -127,7 +138,7 @@ const password = parsedBody?.password;
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
-    res.status(500).json({ message: error.message || "Login failed" });
+    res.status(500).json({ message: "Login failed" });
   }
 });
 
@@ -154,25 +165,26 @@ router.put("/profile", protect, async (req, res) => {
 });
 
 router.post("/forgot-password", async (req, res) => {
+  // Always respond with the same generic message regardless of whether the
+  // email exists, so this endpoint can't be used to enumerate accounts.
+  const genericResponse = {
+    message:
+      "If an account exists for that email, a password reset link has been sent. The link expires in 15 minutes.",
+  };
+
   try {
     const body = parseRequestBody(req.body);
 
     const email = body?.email?.trim().toLowerCase();
 
     if (!email) {
-      return res.status(400).json({
-        message: "Email is required",
-        receivedBody: req.body,
-        parsedBody: body,
-      });
+      return res.status(400).json({ message: "Email is required" });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({
-        message: "No account found with this email",
-      });
+      return res.json(genericResponse);
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -187,15 +199,14 @@ router.post("/forgot-password", async (req, res) => {
 
     const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
-    return res.json({
-      message: "Password reset link created. This link expires in 15 minutes.",
-      resetLink,
-    });
+    // The reset link is delivered by email only. It is never returned in the
+    // response, otherwise anyone could reset another user's password.
+    await sendPasswordResetEmail(email, resetLink);
+
+    return res.json(genericResponse);
   } catch (error) {
     console.error("FORGOT PASSWORD ERROR:", error);
-    return res.status(500).json({
-      message: error.message || "Forgot password failed",
-    });
+    return res.status(500).json({ message: "Forgot password failed" });
   }
 });
 
@@ -209,8 +220,6 @@ router.post("/reset-password/:token", async (req, res) => {
     if (!password) {
       return res.status(400).json({
         message: "New password is required",
-        receivedBody: req.body,
-        parsedBody: body,
       });
     }
 

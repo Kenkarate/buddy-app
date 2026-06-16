@@ -114,6 +114,41 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
+    // Auto-renewing Razorpay subscriptions (home-workout / normal-workouts).
+    // Access itself is still driven by purchasedPlans[] (refreshed on each
+    // subscription.charged webhook); this array tracks the subscription lifecycle
+    // so the user can see/cancel it.
+    subscriptions: [
+      {
+        plan: {
+          type: String,
+          enum: ["personal-training", "normal-workouts", "home-workout"],
+          required: true,
+        },
+        razorpaySubscriptionId: { type: String, index: true },
+        razorpayPlanId: String,
+        status: {
+          type: String,
+          enum: [
+            "created",
+            "authenticated",
+            "active",
+            "pending",
+            "halted",
+            "cancelled",
+            "completed",
+            "expired",
+          ],
+          default: "created",
+        },
+        shortUrl: String,
+        currentStart: Date,
+        currentEnd: Date,
+        cancelledAt: Date,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+
     subscriptionStartedAt: {
       type: Date,
     },

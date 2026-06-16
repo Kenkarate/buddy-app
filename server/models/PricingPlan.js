@@ -28,6 +28,13 @@ const pricingPlanSchema = new mongoose.Schema(
       default: true,
     },
 
+    // Cached Razorpay Plan ID for the monthly subscription of this plan. Created
+    // on demand the first time someone subscribes (see paymentRoutes).
+    razorpayPlanId: {
+      type: String,
+      default: "",
+    },
+
     isActive: {
       type: Boolean,
       default: true,

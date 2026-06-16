@@ -86,7 +86,11 @@ function Register() {
       <p className="muted">Create your fitness account</p>
 
       <form onSubmit={register} className="card">
+        <label className="sr-only" htmlFor="register-name">
+          Full name
+        </label>
         <input
+          id="register-name"
           name="name"
           placeholder="Full name"
           value={form.name}
@@ -94,7 +98,11 @@ function Register() {
           required
         />
 
+        <label className="sr-only" htmlFor="register-email">
+          Email address
+        </label>
         <input
+          id="register-email"
           name="email"
           type="email"
           placeholder="Email address"
@@ -103,7 +111,11 @@ function Register() {
           required
         />
 
+        <label className="sr-only" htmlFor="register-password">
+          Password
+        </label>
         <input
+          id="register-password"
           name="password"
           type="password"
           placeholder="Password"

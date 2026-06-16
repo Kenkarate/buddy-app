@@ -6,31 +6,31 @@ const UserWorkoutAssignment = require("../models/UserWorkoutAssignment");
 const UserDietAssignment = require("../models/UserDietAssignment");
 const protect = require("../middleware/authMiddleware");
 const adminOnly = require("../middleware/adminMiddleware");
+const { ok } = require("../utils/apiResponse");
+const { requireObjectId } = require("../utils/adminValidation");
 
 const router = express.Router();
 
 router.get("/clients", protect, adminOnly, async (req, res) => {
   const clients = await User.find({ role: "user" }).select("-password");
-  res.json(clients);
+  ok(res, clients);
 });
 
 router.get("/workout-plans", protect, adminOnly, async (req, res) => {
   const plans = await WorkoutPlan.find({ isActive: true });
-  res.json(plans);
+  ok(res, plans);
 });
 
 router.get("/diet-plans", protect, adminOnly, async (req, res) => {
   const plans = await DietPlan.find({ isActive: true });
-  res.json(plans);
+  ok(res, plans);
 });
 
 router.post("/assign-workout", protect, adminOnly, async (req, res) => {
-  const { userId, workoutPlanId } = req.body;
+  const userId = requireObjectId(req.body.userId, "userId");
+  const workoutPlanId = requireObjectId(req.body.workoutPlanId, "workoutPlanId");
 
-  await UserWorkoutAssignment.updateMany(
-    { userId },
-    { isActive: false }
-  );
+  await UserWorkoutAssignment.updateMany({ userId }, { isActive: false });
 
   const assignment = await UserWorkoutAssignment.create({
     userId,
@@ -39,16 +39,14 @@ router.post("/assign-workout", protect, adminOnly, async (req, res) => {
     isActive: true,
   });
 
-  res.status(201).json(assignment);
+  ok(res.status(201), assignment);
 });
 
 router.post("/assign-diet", protect, adminOnly, async (req, res) => {
-  const { userId, dietPlanId } = req.body;
+  const userId = requireObjectId(req.body.userId, "userId");
+  const dietPlanId = requireObjectId(req.body.dietPlanId, "dietPlanId");
 
-  await UserDietAssignment.updateMany(
-    { userId },
-    { isActive: false }
-  );
+  await UserDietAssignment.updateMany({ userId }, { isActive: false });
 
   const assignment = await UserDietAssignment.create({
     userId,
@@ -58,7 +56,7 @@ router.post("/assign-diet", protect, adminOnly, async (req, res) => {
     isActive: true,
   });
 
-  res.status(201).json(assignment);
+  ok(res.status(201), assignment);
 });
 
 module.exports = router;

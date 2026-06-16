@@ -6,7 +6,6 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [resetLink, setResetLink] = useState("");
   const [loading, setLoading] = useState(false);
 
   const submitForgotPassword = async (e) => {
@@ -14,7 +13,6 @@ function ForgotPassword() {
 
     setMessage("");
     setError("");
-    setResetLink("");
     setLoading(true);
 
     try {
@@ -22,11 +20,10 @@ function ForgotPassword() {
         email,
       });
 
-      setMessage(res.data.message || "Password reset link created.");
-
-      if (res.data.resetLink) {
-        setResetLink(res.data.resetLink);
-      }
+      setMessage(
+        res.data.message ||
+          "If an account exists for that email, a reset link has been sent."
+      );
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send reset link");
     } finally {
@@ -50,15 +47,6 @@ function ForgotPassword() {
 
         {message && <p className="success">{message}</p>}
         {error && <p className="error">{error}</p>}
-
-        {resetLink && (
-          <div className="reset-link-box">
-            <p>Temporary reset link:</p>
-            <Link to={resetLink.replace(window.location.origin, "")}>
-              Open Reset Page
-            </Link>
-          </div>
-        )}
 
         <button disabled={loading}>
           {loading ? "Please wait..." : "Get Reset Link"}

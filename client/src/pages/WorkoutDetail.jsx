@@ -56,8 +56,10 @@ function WorkoutDetail() {
       exerciseId: workout.exerciseId,
       workoutName: workout.name,
       eventType: "view",
-      source: part === "home-workout" ? "home" : "normal",
-    }).catch(() => {});
+      source: part === "home-workout" ? "home" : part === "weekly" ? "weekly" : "normal",
+    }).catch((eventError) => {
+      console.error("Failed to record workout view:", eventError);
+    });
   }, [part, workout]);
 
   useEffect(() => {
@@ -99,20 +101,33 @@ function WorkoutDetail() {
       exerciseId: workout.exerciseId,
       workoutName: workout.name,
       eventType: "complete",
-      source: part === "home-workout" ? "home" : "normal",
-    }).catch(() => {});
+      source: part === "home-workout" ? "home" : part === "weekly" ? "weekly" : "normal",
+    }).catch((eventError) => {
+      console.error("Failed to record workout completion:", eventError);
+    });
   };
 
   return (
     <div className="workout-detail-page">
-      <button className="elite-back-btn" onClick={() => navigate(`/workout-list/${part}`)}>
+      <button
+        className="elite-back-btn"
+        onClick={() =>
+          navigate(
+            part === "home-workout"
+              ? "/home-workout"
+              : part === "weekly"
+              ? "/workouts"
+              : `/workout-list/${part}`
+          )
+        }
+      >
         <ArrowLeft size={18} />
         Back
       </button>
 
       <div className="workout-gif-card">
         <img
-          src={workout.imageUrls?.[0] || workout.imageUrl || FALLBACK_IMAGE}
+          src={workout.gifUrl || workout.imageUrls?.[0] || workout.imageUrl || FALLBACK_IMAGE}
           alt={workout.name}
           onError={(event) => {
             event.currentTarget.src = FALLBACK_IMAGE;

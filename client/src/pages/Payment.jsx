@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, Crown, Dumbbell } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import { getPlanDetails, normalizePlan } from "../utils/planAccess";
+import { getPlanDetails, normalizePlan, isSubscriptionPlan } from "../utils/planAccess";
 import { fetchCurrencyPricing } from "../utils/currency";
 
 function Payment() {
@@ -63,6 +63,7 @@ function Payment() {
   const normalizedProgram = normalizePlan(program) || "normal-workouts";
   const selectedPlan = planDetails[normalizedProgram] || planDetails["normal-workouts"];
   const displayPrice = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.price;
+  const subscription = isSubscriptionPlan(normalizedProgram);
 
   const proceedToPay = async () => {
     if (loading) return;
@@ -106,8 +107,8 @@ function Payment() {
 
       <div className="premium-price-card">
         <Dumbbell size={30} />
-        <h2>{displayPrice}</h2>
-        <p>One-time dummy payment for testing.</p>
+        <h2>{displayPrice}{subscription ? " / month" : ""}</h2>
+        <p>{subscription ? "Auto-renewing monthly subscription. Cancel anytime." : "One-time payment."}</p>
 
         <div className="premium-benefits">
           {selectedPlan.benefits.map((benefit) => (

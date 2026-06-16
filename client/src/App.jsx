@@ -1,48 +1,51 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Dumbbell } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Share2 } from "lucide-react";
 import "./App.css";
 
 import Home from "./pages/Home";
-import Payment from "./pages/Payment";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-
-import UserWorkout from "./pages/UserWorkout";
-import UserDiet from "./pages/UserDiet";
-import BMI from "./pages/BMI";
-import Weight from "./pages/Weight";
-import Profile from "./pages/Profile";
-
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminDailyWorkout from "./pages/AdminDailyWorkout";
-import AdminWeeklyWorkout from "./pages/AdminWeeklyWorkout";
-import AdminUsers from "./pages/AdminUsers";
-import AdminDiet from "./pages/AdminDiet";
 
 import FooterNav from "./components/FooterNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PlanRoute from "./components/PlanRoute";
 import AdminRoute from "./components/AdminRoute";
 import RouteLoader from "./components/RouteLoader";
-
-import HomeWorkoutSetup from "./pages/HomeWorkoutSetup";
-import DummyRazorpay from "./pages/DummyRazorpay";
-
-import WorkoutList from "./pages/WorkoutList";
-import WorkoutDetail from "./pages/WorkoutDetail";
-import ComingSoon from "./pages/ComingSoon";
-import NotFound from "./pages/NotFound";
-
-import Store from "./pages/Store";
-import ProductDetail from "./pages/ProductDetail";
-
-import { useEffect, useState } from "react";
-import { Share2 } from "lucide-react";
+import PageLoader from "./components/PageLoader";
 import ShareModal from "./components/ShareModal";
-import DailyWorkout from "./pages/DailyWorkout";
+
+const Payment = lazy(() => import("./pages/Payment"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+
+const UserWorkout = lazy(() => import("./pages/UserWorkout"));
+const UserDiet = lazy(() => import("./pages/UserDiet"));
+const BMI = lazy(() => import("./pages/BMI"));
+const Weight = lazy(() => import("./pages/Weight"));
+const Profile = lazy(() => import("./pages/Profile"));
+
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminDailyWorkout = lazy(() => import("./pages/AdminDailyWorkout"));
+const AdminWeeklyWorkout = lazy(() => import("./pages/AdminWeeklyWorkout"));
+const AdminHomeWorkout = lazy(() => import("./pages/AdminHomeWorkout"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const AdminDiet = lazy(() => import("./pages/AdminDiet"));
+const AdminSupport = lazy(() => import("./pages/AdminSupport"));
+const AdminSettings = lazy(() => import("./pages/AdminSettings"));
+
+const DummyRazorpay = lazy(() => import("./pages/DummyRazorpay"));
+
+const WorkoutList = lazy(() => import("./pages/WorkoutList"));
+const WorkoutDetail = lazy(() => import("./pages/WorkoutDetail"));
+const ComingSoon = lazy(() => import("./pages/ComingSoon"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const Store = lazy(() => import("./pages/Store"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+
+const DailyWorkout = lazy(() => import("./pages/DailyWorkout"));
 
 function UserLayout({ children }) {
   const [shareOpen, setShareOpen] = useState(false);
@@ -87,17 +90,9 @@ function App() {
   return (
     <BrowserRouter>
       <RouteLoader />
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Home />} />
-
-        <Route
-          path="/home-workout-setup"
-          element={
-            <PlanRoute plan="home-workout">
-              <HomeWorkoutSetup />
-            </PlanRoute>
-          }
-        />
 
 <Route
   path="/razorpay/:program"
@@ -252,6 +247,14 @@ function App() {
           }
         />
         <Route
+          path="/admin/home-workout"
+          element={
+            <AdminRoute>
+              <AdminHomeWorkout />
+            </AdminRoute>
+          }
+        />
+        <Route
           path="/admin/users"
           element={
             <AdminRoute>
@@ -264,6 +267,22 @@ function App() {
           element={
             <AdminRoute>
               <AdminDiet />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/support"
+          element={
+            <AdminRoute>
+              <AdminSupport />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminRoute>
+              <AdminSettings />
             </AdminRoute>
           }
         />
@@ -312,6 +331,7 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

@@ -1,19 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
-import { normalWorkoutParts } from "../data/dummyNormalWorkouts";
+import HomeWorkoutCalendar from "../components/HomeWorkoutCalendar";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=900&q=80";
-
-function getStoredArray(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "[]");
-  } catch {
-    localStorage.removeItem(key);
-    return [];
-  }
-}
 
 function hasActivePurchase(profile, plan) {
   const now = Date.now();
@@ -41,13 +32,9 @@ function UserWorkout({ routePlan = "" }) {
 
   const selectedProgram = localStorage.getItem("buddySelectedProgram");
   const paymentStatus = localStorage.getItem("buddyPaymentStatus");
-  const homeWorkouts = getStoredArray("buddyHomeWorkouts");
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState("");
-  const [homePlan, setHomePlan] = useState([]);
-  const [homePlanLoading, setHomePlanLoading] = useState(false);
-  const [homePlanError, setHomePlanError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -71,33 +58,6 @@ function UserWorkout({ routePlan = "" }) {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    const effectiveProgram =
-      routePlan || profile?.selectedPlan || profile?.selectedProgram || selectedProgram;
-    if (effectiveProgram !== "home-workout") return;
-
-    let cancelled = false;
-
-    async function loadHomePlan() {
-      try {
-        setHomePlanLoading(true);
-        setHomePlanError("");
-        const res = await api.get("/exercises/home-plan");
-        if (!cancelled) setHomePlan(res.data.days || []);
-      } catch (error) {
-        console.error("Failed to load home plan:", error);
-        if (!cancelled) setHomePlanError("Run npm run seed:exercises to load home workout exercises.");
-      } finally {
-        if (!cancelled) setHomePlanLoading(false);
-      }
-    }
-
-    loadHomePlan();
-    return () => {
-      cancelled = true;
-    };
-  }, [profile?.selectedPlan, profile?.selectedProgram, routePlan, selectedProgram]);
 
   const loadTimer = async () => {
     try {
@@ -208,73 +168,10 @@ function UserWorkout({ routePlan = "" }) {
   }
 
   if (effectiveProgram === "home-workout") {
-    return (
-      <div className="elite-workout-page">
-        <section className="target-zones-header">
-          <div>
-            <h1>Home Workouts</h1>
-            <p>30 days · 5 beginner/intermediate exercises per day</p>
-          </div>
-        </section>
-
-        {homePlanLoading && <div className="trainer-empty-state">Loading home workout plan...</div>}
-        {homePlanError && <div className="trainer-empty-state">{homePlanError}</div>}
-
-        {!homePlanLoading && !homePlanError && (
-          <div className="home-plan-days">
-            {homePlan.map((day) => (
-              <section className="home-plan-day-card" key={day.day}>
-                <div className="home-plan-day-head">
-                  <h2>Day {day.day}</h2>
-                  <span>{day.exercises?.length || 0} exercises</span>
-                </div>
-
-                <div className="dummy-workout-list">
-                  {(day.exercises || []).map((workout) => (
-                    <button
-                      type="button"
-                      className="dummy-workout-card home-exercise-row"
-                      key={workout.exerciseId}
-                      onClick={() => navigate(`/workout-detail/${workout.bodyPart}/${workout.exerciseId}`)}
-                    >
-                      <img
-                        src={workout.imageUrls?.[0] || FALLBACK_IMAGE}
-                        alt={workout.name}
-                        onError={(event) => {
-                          event.currentTarget.src = FALLBACK_IMAGE;
-                        }}
-                      />
-                      <div>
-                        <p>{workout.primaryMuscles?.[0] || workout.bodyPart}</p>
-                        <h2>{workout.name}</h2>
-                        <span>{workout.equipment || "bodyweight"} · {workout.level || "beginner"}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        )}
-
-        {homeWorkouts.length > 0 && homePlan.length === 0 && (
-          <div className="dummy-workout-list">
-            {homeWorkouts.map((workout, index) => (
-              <div className="dummy-workout-card" key={`${workout.name}-${index}`}>
-                <p>{workout.muscle}</p>
-                <h2>{workout.name}</h2>
-                <span>
-                  {workout.sets} sets · {workout.reps}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
+    return <HomeWorkoutCalendar />;
   }
 
-  
+
 
   return (
     <div className="elite-workout-page">
@@ -322,7 +219,12 @@ function UserWorkout({ routePlan = "" }) {
 
           <div className="dummy-workout-list">
             {weeklyPlan.exercises.map((exercise) => (
-              <div className="dummy-workout-card home-exercise-row" key={exercise.exerciseId}>
+              <button
+                type="button"
+                className="dummy-workout-card home-exercise-row"
+                key={exercise.exerciseId}
+                onClick={() => navigate(`/workout-detail/weekly/${exercise.exerciseId}`)}
+              >
                 <img
                   src={exercise.imageUrl || FALLBACK_IMAGE}
                   alt={exercise.name}
@@ -337,28 +239,11 @@ function UserWorkout({ routePlan = "" }) {
                     {exercise.sets} sets · {exercise.reps} reps · {exercise.rest}s rest
                   </span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </section>
       )}
-
-      <div className="normal-part-grid">
-        {normalWorkoutParts.map((item) => (
-          <button
-            key={item.slug}
-            className="normal-part-card"
-            onClick={() => navigate(`/workout-list/${item.slug}`)}
-          >
-            <img src={item.image} alt={item.part} />
-
-            <div>
-              <h2>{item.part}</h2>
-              <span>{item.workouts.length} workouts</span>
-            </div>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

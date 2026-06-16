@@ -93,7 +93,11 @@ function Login() {
       <p className="muted">Login to continue your training</p>
 
       <form onSubmit={login} className="card">
+        <label className="sr-only" htmlFor="login-email">
+          Email address
+        </label>
         <input
+          id="login-email"
           type="email"
           placeholder="Email address"
           value={form.email}
@@ -101,7 +105,11 @@ function Login() {
           required
         />
 
+        <label className="sr-only" htmlFor="login-password">
+          Password
+        </label>
         <input
+          id="login-password"
           type="password"
           placeholder="Password"
           value={form.password}

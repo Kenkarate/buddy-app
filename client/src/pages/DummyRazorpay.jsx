@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreditCard, ShieldCheck } from "lucide-react";
 import api from "../api/api";
-import { getPlanDetails, normalizePlan } from "../utils/planAccess";
+import { getPlanDetails, normalizePlan, isSubscriptionPlan } from "../utils/planAccess";
 import { detectClientCountry, fetchCurrencyPricing } from "../utils/currency";
 
 function getStoredUser() {
@@ -73,13 +73,60 @@ function DummyRazorpay() {
   };
 
   const displayAmount = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.amount;
+  const subscription = isSubscriptionPlan(normalizedProgram);
+
+  const startSubscription = async () => {
+    const subRes = await api.post(`/payments/subscribe/${normalizedProgram}`);
+    const { subscriptionId, keyId, planTitle } = subRes.data;
+
+    const user = getStoredUser();
+
+    if (!window.Razorpay) {
+      throw new Error("Razorpay script is not loaded. Please refresh and try again.");
+    }
+
+    const options = {
+      key: keyId,
+      subscription_id: subscriptionId,
+      name: "Buddy Fitness",
+      description: `${planTitle} · Monthly`,
+      prefill: {
+        name: user.name || "",
+        email: user.email || "",
+      },
+      theme: { color: "#050605" },
+      handler: async function (response) {
+        const verifyRes = await api.post("/payments/subscription/verify", response);
+
+        if (verifyRes.data.success) {
+          const updatedUser = verifyRes.data.user;
+          localStorage.setItem("buddyUser", JSON.stringify(updatedUser));
+          localStorage.setItem("buddySelectedProgram", verifyRes.data.program);
+          localStorage.setItem("buddyPaymentStatus", "paid");
+          localStorage.removeItem("buddyPendingProgram");
+          navigate(verifyRes.data.redirectPath || "/workouts", { replace: true });
+        }
+      },
+      modal: {
+        ondismiss: function () {
+          setLoading(false);
+        },
+      },
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  };
 
   const startPayment = async () => {
     setLoading(true);
     setError("");
 
     try {
-      console.log("Sending program:", normalizedProgram);
+      if (subscription) {
+        await startSubscription();
+        return;
+      }
 
       const orderRes = await api.post("/payments/create-order", {
         program: normalizedProgram,
@@ -153,7 +200,11 @@ function DummyRazorpay() {
         </div>
 
         <h1>Razorpay Checkout</h1>
-        <p>Complete payment to unlock {selectedPlan.title}.</p>
+        <p>
+          {subscription
+            ? `Start your monthly ${selectedPlan.title} subscription.`
+            : `Complete payment to unlock ${selectedPlan.title}.`}
+        </p>
 
         <div className="razorpay-summary">
           <span>Plan</span>
@@ -161,9 +212,16 @@ function DummyRazorpay() {
         </div>
 
         <div className="razorpay-summary">
-          <span>Amount</span>
+          <span>{subscription ? "Amount / month" : "Amount"}</span>
           <strong>{displayAmount}</strong>
         </div>
+
+        {subscription && (
+          <div className="razorpay-summary">
+            <span>Billing</span>
+            <strong>Auto-renews monthly</strong>
+          </div>
+        )}
 
         <div className="secure-row">
           <ShieldCheck size={20} />

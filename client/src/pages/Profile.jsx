@@ -41,11 +41,14 @@ function Profile() {
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem("buddyTheme") || "dark");
 
+  const [cancelStatus, setCancelStatus] = useState({ id: "", message: "", isError: false });
+
   const [queryForm, setQueryForm] = useState({
     type: "Query",
     subject: "",
     message: "",
   });
+  const [queryStatus, setQueryStatus] = useState({ submitting: false, message: "", isError: false });
 
   const [trainerForm, setTrainerForm] = useState({
     businessName: "",
@@ -53,10 +56,10 @@ function Profile() {
     phone: "",
     message: "",
   });
+  const [trainerStatus, setTrainerStatus] = useState({ submitting: false, message: "", isError: false });
 
   const storedUser = getStoredUser();
 const userEmail = profile?.email || storedUser?.email || "";
-const userName = profile?.name || storedUser?.name || "Buddy User";
 const selectedWorkout =
   planLabels[profile?.selectedPlan] ||
   planLabels[profile?.selectedProgram] ||
@@ -115,29 +118,99 @@ const loadProfile = async () => {
   navigate("/", { replace: true });
 };
 
-  const submitQuery = (e) => {
+  const submitQuery = async (e) => {
     e.preventDefault();
+    if (queryStatus.submitting) return;
 
-    alert("Your query has been submitted.");
+    setQueryStatus({ submitting: true, message: "", isError: false });
 
-    setQueryForm({
-      type: "Query",
-      subject: "",
-      message: "",
-    });
+    try {
+      await api.post("/contact", {
+        type: queryForm.type,
+        subject: queryForm.subject,
+        message: queryForm.message,
+        email: userEmail,
+      });
+
+      setQueryStatus({ submitting: false, message: "Thanks! We've received your message.", isError: false });
+      setQueryForm({
+        type: "Query",
+        subject: "",
+        message: "",
+      });
+    } catch (submitError) {
+      console.error("Failed to submit query:", submitError);
+      setQueryStatus({
+        submitting: false,
+        message: submitError.response?.data?.message || "Could not submit your message. Please try again.",
+        isError: true,
+      });
+    }
   };
 
-  const submitTrainerRequest = (e) => {
+  const submitTrainerRequest = async (e) => {
     e.preventDefault();
+    if (trainerStatus.submitting) return;
 
-    alert("Trainer partnership request submitted.");
+    setTrainerStatus({ submitting: true, message: "", isError: false });
 
-    setTrainerForm({
-      businessName: "",
-      experience: "",
-      phone: "",
-      message: "",
-    });
+    try {
+      await api.post("/contact", {
+        type: "Trainer Partnership",
+        subject: trainerForm.businessName,
+        trainerBusinessName: trainerForm.businessName,
+        experience: trainerForm.experience,
+        phone: trainerForm.phone,
+        message: trainerForm.message,
+        email: userEmail,
+      });
+
+      setTrainerStatus({ submitting: false, message: "Thanks! Our team will reach out soon.", isError: false });
+      setTrainerForm({
+        businessName: "",
+        experience: "",
+        phone: "",
+        message: "",
+      });
+    } catch (submitError) {
+      console.error("Failed to submit trainer request:", submitError);
+      setTrainerStatus({
+        submitting: false,
+        message: submitError.response?.data?.message || "Could not submit your request. Please try again.",
+        isError: true,
+      });
+    }
+  };
+
+  const activeSubscriptions = (profile?.subscriptions || []).filter(
+    (sub) => sub.razorpaySubscriptionId && !["completed", "expired"].includes(sub.status)
+  );
+
+  const cancelSubscription = async (sub) => {
+    if (!window.confirm("Cancel this subscription? You'll keep access until the current billing cycle ends.")) {
+      return;
+    }
+
+    setCancelStatus({ id: sub.razorpaySubscriptionId, message: "", isError: false });
+
+    try {
+      const res = await api.post("/payments/subscription/cancel", {
+        subscriptionId: sub.razorpaySubscriptionId,
+        program: sub.plan,
+      });
+      if (res.data.user) {
+        setProfile(res.data.user);
+        localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
+      }
+      setCancelStatus({ id: "", message: "Subscription will end at the current billing cycle.", isError: false });
+    } catch (error) {
+      console.error("Failed to cancel subscription:", error);
+      setCancelStatus({
+        id: "",
+        message: error.response?.data?.message || "Could not cancel subscription. Please try again.",
+        isError: true,
+      });
+    }
   };
 
   const upgradePremium = () => {
@@ -279,6 +352,52 @@ if (profileLoading && !profile && !userEmail) {
         </div>
       </section>
 
+      {activeSubscriptions.length > 0 && (
+        <section className="subscription-section">
+          <div className="section-heading-row">
+            <KeyRound size={26} />
+            <h2>Subscriptions</h2>
+          </div>
+
+          <div className="subscription-list">
+            {activeSubscriptions.map((sub) => {
+              const cancelled = sub.status === "cancelled";
+              return (
+                <div className="subscription-card" key={sub.razorpaySubscriptionId}>
+                  <div className="subscription-info">
+                    <h3>{planLabels[sub.plan] || sub.plan}</h3>
+                    <span className={`subscription-status ${cancelled ? "cancelled" : "active"}`}>
+                      {cancelled ? "Cancelling" : "Active · renews monthly"}
+                    </span>
+                    {sub.currentEnd && (
+                      <small>
+                        {cancelled ? "Access until " : "Next renewal "}
+                        {new Date(sub.currentEnd).toLocaleDateString()}
+                      </small>
+                    )}
+                  </div>
+
+                  {!cancelled && (
+                    <button
+                      type="button"
+                      className="subscription-cancel-btn"
+                      onClick={() => cancelSubscription(sub)}
+                      disabled={cancelStatus.id === sub.razorpaySubscriptionId}
+                    >
+                      {cancelStatus.id === sub.razorpaySubscriptionId ? "Cancelling..." : "Cancel"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {cancelStatus.message && (
+            <p className={cancelStatus.isError ? "error" : "form-success"}>{cancelStatus.message}</p>
+          )}
+        </section>
+      )}
+
       <section className="faq-section">
         <div className="section-heading-row">
           <HelpCircle size={26} />
@@ -383,7 +502,13 @@ if (profileLoading && !profile && !userEmail) {
             />
           </label>
 
-          <button className="complaint-submit-btn">Submit</button>
+          {queryStatus.message && (
+            <p className={queryStatus.isError ? "error" : "form-success"}>{queryStatus.message}</p>
+          )}
+
+          <button className="complaint-submit-btn" type="submit" disabled={queryStatus.submitting}>
+            {queryStatus.submitting ? "Submitting..." : "Submit"}
+          </button>
         </form>
       </section>
 
@@ -470,7 +595,13 @@ if (profileLoading && !profile && !userEmail) {
             />
           </label>
 
-          <button className="trainer-submit-btn">Contact Us</button>
+          {trainerStatus.message && (
+            <p className={trainerStatus.isError ? "error" : "form-success"}>{trainerStatus.message}</p>
+          )}
+
+          <button className="trainer-submit-btn" type="submit" disabled={trainerStatus.submitting}>
+            {trainerStatus.submitting ? "Submitting..." : "Contact Us"}
+          </button>
         </form>
       </section>
 

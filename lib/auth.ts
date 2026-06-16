@@ -71,6 +71,15 @@ export function requireAuthId(req: NextRequest): string {
   return id;
 }
 
+// Non-throwing variant for user-facing (non-enveloped) routes: returns the
+// user document or null. Callers emit their own raw { message } error shapes.
+export async function getUserFromRequest(req: NextRequest) {
+  const id = getAuthIdFromRequest(req);
+  if (!id) return null;
+  await connectDB();
+  return User.findById(id);
+}
+
 // Route-handler guard: loads and returns the full user document, or throws.
 export async function requireUser(req: NextRequest) {
   const id = requireAuthId(req);

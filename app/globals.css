@@ -1,4 +1,121 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap");
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/* ===================== base tokens (was client/src/index.css) ===================== */
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+/* ===================== app styles (was client/src/App.css) ===================== */
 
 * {
   box-sizing: border-box;
@@ -6579,4 +6696,1550 @@ button {
   margin-left: auto;
   flex-shrink: 0;
   color: #9ca3af;
+}
+
+/* ===================== admin styles (was client/src/admin.css) ===================== */
+
+/*
+  Tailwind preflight is intentionally NOT imported globally because it would
+  reset styles across the whole app (App.css owns that). Instead, a scoped
+  subset of preflight is applied under .admin-app, in the "base" layer so
+  Tailwind utility classes (in the "utilities" layer below) always win.
+*/
+@layer base {
+  .admin-app,
+  .admin-app *,
+  .admin-app ::before,
+  .admin-app ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: var(--color-border, currentColor);
+  }
+
+  .admin-app {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+  }
+
+  .admin-app hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+
+  .admin-app h1,
+  .admin-app h2,
+  .admin-app h3,
+  .admin-app h4,
+  .admin-app h5,
+  .admin-app h6 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+  }
+
+  .admin-app p,
+  .admin-app blockquote,
+  .admin-app dl,
+  .admin-app dd,
+  .admin-app figure {
+    margin: 0;
+  }
+
+  .admin-app a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  .admin-app b,
+  .admin-app strong {
+    font-weight: bolder;
+  }
+
+  .admin-app button,
+  .admin-app input,
+  .admin-app optgroup,
+  .admin-app select,
+  .admin-app textarea {
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+  }
+
+  .admin-app button,
+  .admin-app select {
+    text-transform: none;
+  }
+
+  .admin-app button,
+  .admin-app input:where([type="button"]),
+  .admin-app input:where([type="reset"]),
+  .admin-app input:where([type="submit"]) {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none;
+  }
+
+  .admin-app button,
+  .admin-app [role="button"] {
+    cursor: pointer;
+  }
+
+  .admin-app :disabled {
+    cursor: default;
+  }
+
+  .admin-app ol,
+  .admin-app ul,
+  .admin-app menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .admin-app img,
+  .admin-app svg,
+  .admin-app video,
+  .admin-app canvas,
+  .admin-app audio,
+  .admin-app iframe,
+  .admin-app embed,
+  .admin-app object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  .admin-app img,
+  .admin-app video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .admin-app fieldset {
+    margin: 0;
+    padding: 0;
+  }
+
+  .admin-app legend {
+    padding: 0;
+  }
+
+  .admin-app textarea {
+    resize: vertical;
+  }
+
+  .admin-app ::placeholder {
+    opacity: 1;
+    color: var(--color-muted-foreground);
+  }
+
+  .admin-app table {
+    border-collapse: collapse;
+    text-indent: 0;
+    border-color: inherit;
+  }
+
+  .admin-app summary {
+    display: list-item;
+  }
+}
+
+
+@theme {
+  --color-background: #070a12;
+  --color-foreground: #f7f8fb;
+  --color-card: #111723;
+  --color-card-foreground: #f7f8fb;
+  --color-popover: #131b28;
+  --color-popover-foreground: #f4f4f5;
+  --color-primary: #ff4655;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #182233;
+  --color-secondary-foreground: #f4f4f5;
+  --color-muted: #151f2f;
+  --color-muted-foreground: #a9b2c3;
+  --color-accent: #1e2d43;
+  --color-accent-foreground: #f4f4f5;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-success: #2dd4bf;
+  --color-success-foreground: #ffffff;
+  --color-border: #273247;
+  --color-input: #273247;
+  --color-ring: #ff4655;
+}
+
+.admin-app {
+  color-scheme: dark;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+/*
+  index.css (leftover Vite boilerplate) sets unlayered #root/h1/h2 rules
+  (centered text, capped width, 56px h1 with a light-mode color) that would
+  otherwise win over Tailwind's layered utilities. Override them here with
+  matching (or higher) specificity, unlayered, scoped to .admin-app.
+*/
+#root:has(.admin-app) {
+  all: unset;
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.admin-app h1,
+.admin-app h2 {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: normal;
+  margin: 0;
+  color: inherit;
+}
+
+.admin-app h1 {
+  font-size: 1.125rem;
+  line-height: 1.375rem;
+}
+
+.admin-app h2 {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .admin-app h1 {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+.admin-app ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-app ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+/* Footer-only mobile admin shell */
+#root:has(.admin-layout-shell) {
+  background: #070a12;
+}
+
+.admin-app.admin-layout-shell {
+  --admin-bg: #070a12;
+  --admin-surface: rgba(17, 23, 35, 0.92);
+  --admin-surface-soft: rgba(255, 255, 255, 0.055);
+  --admin-border: rgba(148, 163, 184, 0.16);
+  --admin-accent: #ff4655;
+  --admin-accent-soft: rgba(255, 70, 85, 0.14);
+  --admin-mint: #2dd4bf;
+  --admin-gold: #f6c85f;
+  --admin-muted: #a9b2c3;
+  display: block;
+  width: min(430px, 100%);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: 20px 16px 104px;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(45, 212, 191, 0.14), transparent 32%),
+    radial-gradient(circle at top left, rgba(255, 70, 85, 0.12), transparent 34%),
+    linear-gradient(180deg, #111827 0%, var(--admin-bg) 58%, #04060b 100%);
+  color: #fff;
+  font-family: "Montserrat", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.admin-layout-header {
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 4px 2px 0;
+}
+
+.admin-layout-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-layout-title p {
+  color: var(--admin-mint);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+}
+
+.admin-layout-title h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.75rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-layout-title span {
+  display: block;
+  max-width: 100%;
+  margin-top: 0.45rem;
+  color: var(--admin-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.admin-layout-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  max-width: 46%;
+}
+
+.admin-layout-actions > button {
+  width: auto;
+  max-width: 132px;
+  min-height: 42px;
+  padding: 0 0.7rem;
+  border-radius: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-layout-actions .admin-refresh-button {
+  min-width: 74px;
+  max-width: 86px;
+  height: 42px;
+  padding: 0 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.26);
+  color: #fff;
+  font-size: 0.72rem;
+}
+
+.admin-layout-actions .admin-logout-btn {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--admin-border);
+  color: #fff;
+}
+
+.admin-layout-content {
+  display: block;
+  min-width: 0;
+}
+
+.admin-last-updated {
+  margin: -0.45rem 0 0.85rem;
+  color: var(--admin-muted);
+  font-size: 0.74rem;
+  text-align: right;
+}
+
+.admin-dashboard-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-mobile-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.admin-loading-grid span {
+  min-height: 104px;
+}
+
+.admin-stat-card-mobile {
+  min-width: 0;
+}
+
+.admin-stat-card-mobile [class*="p-4"] {
+  min-height: 112px;
+  padding: 0.95rem;
+  justify-content: center;
+}
+
+.admin-stat-card-mobile svg {
+  color: var(--admin-mint);
+}
+
+.admin-stat-card-mobile strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.5rem;
+}
+
+.admin-stat-card-mobile span {
+  min-height: 2.1em;
+  line-height: 1.05;
+}
+
+.admin-chart-box {
+  width: 100%;
+  height: 258px;
+  min-width: 0;
+}
+
+.admin-app .grid {
+  min-width: 0;
+}
+
+.admin-app .rounded-xl,
+.admin-app [class*="rounded-xl"] {
+  border-radius: 24px;
+}
+
+.admin-app [class*="bg-card"],
+.admin-app [class*="bg-muted"] {
+  border-color: var(--admin-border);
+}
+
+.admin-app [class*="bg-card"] {
+  background: var(--admin-surface);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.admin-app [class*="bg-muted"] {
+  background-color: var(--admin-surface-soft);
+}
+
+.admin-app [class*="text-primary"] {
+  color: var(--admin-mint);
+}
+
+.admin-app [class*="bg-primary"] {
+  background-color: var(--admin-accent);
+}
+
+.admin-app .recharts-responsive-container,
+.admin-app .recharts-wrapper {
+  max-width: 100%;
+}
+
+.admin-app table {
+  min-width: 680px;
+}
+
+.admin-app [class*="overflow-auto"] {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-app [class*="gap-4"] {
+  row-gap: 0.95rem;
+}
+
+.admin-app input,
+.admin-app textarea,
+.admin-app select {
+  max-width: 100%;
+}
+
+.admin-app .admin-footer-nav {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  height: 78px;
+  background: rgba(7, 10, 18, 0.94);
+  border-top-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 -18px 38px rgba(0, 0, 0, 0.34);
+}
+
+.admin-app .admin-footer-item {
+  min-width: 0;
+  padding: 0 1px;
+  color: #7f8aa0;
+}
+
+.admin-app .admin-footer-item.active {
+  color: var(--admin-mint);
+}
+
+.admin-app .admin-footer-item span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .admin-app.admin-layout-shell {
+    width: min(430px, 100%);
+  }
+}
+
+/* Admin Diet polish */
+.admin-diet-page {
+  --diet-accent: #9be15d;
+  --diet-accent-strong: #21c064;
+  --diet-surface: rgba(13, 20, 31, 0.96);
+  --diet-surface-soft: rgba(255, 255, 255, 0.075);
+  --diet-border: rgba(155, 225, 93, 0.2);
+  --diet-text: #f8fbf6;
+  --diet-muted: #b7c4b2;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-diet-page .admin-diet-notice {
+  padding: 0.95rem 1rem;
+  border-radius: 20px;
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.admin-diet-page .admin-diet-notice.error {
+  border: 1px solid rgba(248, 113, 113, 0.32);
+  background: rgba(127, 29, 29, 0.34);
+  color: #fecaca;
+}
+
+.admin-diet-page .admin-diet-notice.success {
+  border: 1px solid rgba(155, 225, 93, 0.32);
+  background: rgba(33, 192, 100, 0.14);
+  color: #d9f99d;
+}
+
+.admin-diet-tabs {
+  width: 100%;
+}
+
+.admin-diet-tabs [role="tablist"] {
+  width: 100%;
+  min-height: 56px;
+  padding: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.admin-diet-tabs [role="tab"] {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 17px;
+  color: var(--diet-muted);
+  font-size: 0.93rem;
+  font-weight: 900;
+}
+
+.admin-diet-tabs [role="tab"][data-state="active"] {
+  background: linear-gradient(135deg, rgba(155, 225, 93, 0.95), rgba(33, 192, 100, 0.95));
+  color: #071209;
+  box-shadow: 0 12px 26px rgba(33, 192, 100, 0.22);
+}
+
+.admin-diet-loading {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-diet-form-large {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.admin-diet-page .admin-diet-card {
+  border: 1px solid var(--diet-border);
+  border-radius: 28px;
+  background:
+    linear-gradient(145deg, rgba(155, 225, 93, 0.085), transparent 34%),
+    var(--diet-surface);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+}
+
+.admin-diet-page .admin-diet-card [class*="p-6"] {
+  padding: 1.1rem;
+}
+
+.admin-diet-page .admin-diet-card [class*="space-y-1.5"] {
+  gap: 0.35rem;
+}
+
+.admin-diet-page .admin-diet-card h3,
+.admin-diet-page .admin-diet-card [class*="text-2xl"],
+.admin-diet-page .admin-diet-card [class*="text-sm"] {
+  color: var(--diet-text);
+}
+
+.admin-diet-page .admin-diet-card [class*="text-2xl"] {
+  font-size: 1.22rem;
+  line-height: 1.35;
+  font-weight: 950;
+}
+
+.admin-diet-page .admin-diet-meal-panel [class*="text-sm"] {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  font-weight: 950;
+}
+
+.admin-diet-page label {
+  gap: 0.55rem;
+}
+
+.admin-diet-page .text-xs,
+.admin-diet-page label [class*="text-xs"],
+.admin-diet-page [class*="text-muted-foreground"] {
+  color: var(--diet-muted);
+  font-size: 0.88rem;
+  line-height: 1.2rem;
+  font-weight: 850;
+}
+
+.admin-app .admin-diet-page input,
+.admin-app .admin-diet-page textarea,
+.admin-app .admin-diet-page select {
+  min-height: 56px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--diet-text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-app .admin-diet-page textarea {
+  min-height: 112px;
+  padding-top: 0.9rem;
+}
+
+.admin-app .admin-diet-page input:focus,
+.admin-app .admin-diet-page textarea:focus,
+.admin-app .admin-diet-page select:focus {
+  border-color: rgba(155, 225, 93, 0.72);
+  box-shadow: 0 0 0 4px rgba(155, 225, 93, 0.12);
+}
+
+.admin-diet-page [class*="bg-muted"] {
+  border-color: rgba(148, 163, 184, 0.14);
+  border-radius: 22px;
+  background: var(--diet-surface-soft);
+  padding: 1rem;
+}
+
+.admin-diet-page .admin-diet-secondary-button {
+  min-height: 50px;
+  border: 1px solid rgba(155, 225, 93, 0.28);
+  border-radius: 18px;
+  background: rgba(155, 225, 93, 0.1);
+  color: #e4ffc4;
+  padding-inline: 1rem;
+  font-size: 0.94rem;
+  font-weight: 950;
+}
+
+.admin-diet-page .admin-diet-save-button {
+  flex: 1;
+  min-height: 54px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--diet-accent), var(--diet-accent-strong));
+  color: #071209;
+  padding-inline: 1.1rem;
+  font-size: 0.96rem;
+  font-weight: 950;
+  box-shadow: 0 16px 30px rgba(33, 192, 100, 0.22);
+}
+
+.admin-diet-page button[aria-label="Remove meal"],
+.admin-diet-page button[aria-label="Remove food"] {
+  border-color: rgba(248, 113, 113, 0.24);
+  border-radius: 15px;
+  background: rgba(248, 113, 113, 0.09);
+}
+
+.admin-food-lookup-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+}
+
+.admin-food-lookup-row .admin-diet-secondary-button {
+  min-width: 92px;
+  padding-inline: 0.85rem;
+}
+
+.admin-food-lookup-error {
+  color: #fecaca !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+}
+
+.admin-food-lookup-results {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.admin-food-lookup-results button {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 62px;
+  border: 1px solid rgba(155, 225, 93, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.55rem;
+  text-align: left;
+}
+
+.admin-food-lookup-results img,
+.admin-food-lookup-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  object-fit: cover;
+  background:
+    linear-gradient(135deg, rgba(155, 225, 93, 0.24), rgba(33, 192, 100, 0.1)),
+    rgba(255, 255, 255, 0.08);
+}
+
+.admin-food-lookup-results strong,
+.admin-food-lookup-results small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-food-lookup-results strong {
+  color: var(--diet-text);
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.admin-food-lookup-results small {
+  margin-top: 0.16rem;
+  color: var(--diet-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+/* Food-tracker style admin diet page */
+#root:has(.admin-diet-tracker) {
+  background: #f4f4f4;
+}
+
+.admin-app.admin-layout-shell:has(.admin-diet-tracker) {
+  width: min(430px, 100%);
+  min-height: 100svh;
+  padding: 0;
+  background: #f4f4f4;
+  color: #111;
+  font-family: "Montserrat", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.admin-app.admin-layout-shell:has(.admin-diet-tracker) .admin-layout-header,
+.admin-app.admin-layout-shell:has(.admin-diet-tracker) .admin-footer-nav {
+  display: none;
+}
+
+.admin-app.admin-layout-shell:has(.admin-diet-tracker) .admin-layout-content {
+  min-height: 100svh;
+}
+
+.admin-diet-tracker {
+  position: relative;
+  min-height: 100svh;
+  overflow-x: hidden;
+  background: #f4f4f4;
+  color: #111;
+  padding: 0 16px 28px;
+}
+
+.admin-diet-ios-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 12px 16px 0;
+  color: #000;
+}
+
+.admin-diet-ios-status strong {
+  font-size: 1.45rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.admin-diet-ios-status span {
+  color: #050505;
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+}
+
+.admin-diet-topbar,
+.admin-diet-detail-head {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 96px;
+  padding: 4px 0 14px;
+}
+
+.admin-diet-detail-head {
+  grid-template-columns: 54px minmax(0, 1fr) 54px;
+}
+
+.admin-diet-topbar button,
+.admin-diet-detail-head button,
+.admin-diet-search-head > button {
+  border: 0;
+  background: transparent;
+  color: #202020;
+}
+
+.admin-diet-day-select {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #161616;
+}
+
+.admin-diet-day-select select {
+  width: 92px;
+  border: 0;
+  background: transparent;
+  color: #161616;
+  font-size: 1.42rem;
+  font-weight: 650;
+  text-align: center;
+  appearance: none;
+}
+
+.admin-diet-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.admin-diet-toast {
+  margin: -4px 0 14px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: #e8f5ee;
+  color: #336f5e;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.admin-diet-toast.error {
+  background: #fff0ee;
+  color: #c84c3a;
+}
+
+.admin-diet-calorie-card {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 54px;
+  align-items: center;
+  gap: 18px;
+  min-height: 132px;
+  margin: 0 0 20px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.admin-diet-ring {
+  --progress: 0%;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, #fff 0 63%, transparent 64%),
+    conic-gradient(#f58226 0 var(--progress), #e7e7e7 var(--progress) 100%);
+  color: #f58226;
+}
+
+.admin-diet-calorie-card strong {
+  display: block;
+  color: #454545;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.admin-diet-calorie-card span {
+  display: block;
+  margin-top: 6px;
+  color: #8b8b8b;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.admin-diet-calorie-card button {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #fff0e7;
+  color: #f58226;
+}
+
+.admin-diet-action-strip {
+  display: flex;
+  gap: 12px;
+  width: calc(100% + 32px);
+  margin: 0 -16px 26px;
+  padding: 0 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.admin-diet-action-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-diet-action-strip button {
+  flex: 0 0 146px;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  color: #171717;
+  padding: 0 18px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.admin-diet-action-strip svg {
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border-radius: 13px;
+  background: #060606;
+  color: #fff;
+}
+
+.admin-diet-meal-feed {
+  display: grid;
+  gap: 34px;
+  padding-bottom: 22px;
+}
+
+.admin-diet-feed-section {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-diet-meal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-diet-meal-heading h2 {
+  color: #393939;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.admin-diet-meal-heading div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.admin-diet-meal-heading span {
+  color: #8e8e8e;
+  font-size: 1.06rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-diet-meal-heading button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #f58226;
+  color: #fff;
+}
+
+.admin-diet-food-card,
+.admin-diet-empty-meal {
+  border-radius: 18px;
+  background: #fff;
+}
+
+.admin-diet-food-card {
+  overflow: hidden;
+}
+
+.admin-diet-food-row {
+  width: 100%;
+  min-height: 94px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 26px;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: #fff;
+  padding: 18px;
+  text-align: left;
+}
+
+.admin-diet-food-row span,
+.admin-diet-search-list button span {
+  display: grid;
+  min-width: 0;
+}
+
+.admin-diet-food-row strong,
+.admin-diet-search-list strong {
+  overflow: hidden;
+  color: #111;
+  font-size: 1.08rem;
+  line-height: 1.2;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-diet-food-row small,
+.admin-diet-search-list small {
+  overflow: hidden;
+  margin-top: 6px;
+  color: #858585;
+  font-size: 0.98rem;
+  line-height: 1.12;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-diet-food-row em,
+.admin-diet-search-list em {
+  color: #646464;
+  font-size: 1.04rem;
+  font-style: normal;
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.admin-diet-food-row svg {
+  color: #777;
+}
+
+.admin-diet-save-meal {
+  width: 100%;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-top: 1px solid #ededed;
+  background: #fff;
+  color: #202020;
+  padding: 0 18px;
+  font-size: 1.13rem;
+  font-weight: 900;
+}
+
+.admin-diet-empty-meal {
+  min-height: 94px;
+  display: grid;
+  place-items: center;
+  color: #8c8c8c;
+  padding: 18px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 620;
+}
+
+.admin-diet-suggestion-copy {
+  color: #8b8b8b;
+  font-size: 1rem;
+  font-weight: 760;
+}
+
+.admin-diet-unlock-row {
+  display: grid;
+  grid-template-columns: 5px minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+}
+
+.admin-diet-unlock-row > span {
+  width: 5px;
+  height: 58px;
+  border-radius: 999px;
+  background: #f58226;
+}
+
+.admin-diet-unlock-row button {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 18px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #111;
+  padding: 0 18px;
+  font-size: 1.04rem;
+  font-weight: 900;
+  text-align: left;
+}
+
+.admin-diet-unlock-row button svg:first-child {
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  border: 2px solid #111;
+  border-radius: 999px;
+}
+
+.admin-diet-snap-button {
+  position: fixed;
+  right: max(16px, calc((100vw - 430px) / 2 + 16px));
+  bottom: 28px;
+  min-width: 110px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.18);
+}
+
+.admin-diet-search-head {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 24px;
+}
+
+.admin-diet-search-head > button {
+  width: 54px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+}
+
+.admin-diet-search-box {
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid #3c7667;
+  border-radius: 17px;
+  background: #fff;
+  padding: 0 18px;
+}
+
+.admin-diet-search-box svg {
+  color: #a2a2a2;
+}
+
+.admin-diet-search-box input {
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111;
+  font-size: 1.32rem;
+  font-weight: 650;
+}
+
+.admin-diet-search-box input::placeholder {
+  color: #8b8b91;
+}
+
+.admin-diet-camera-card {
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 30px;
+  border-radius: 18px;
+  background: #e9efed;
+  padding: 20px;
+}
+
+.admin-diet-camera-card h2 {
+  color: #367264;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.admin-diet-camera-card p {
+  margin-top: 10px;
+  color: #367264;
+  font-size: 0.98rem;
+  font-weight: 650;
+}
+
+.admin-diet-camera-card button {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 15px;
+  background: #367264;
+  color: #fff;
+}
+
+.admin-diet-search-list {
+  display: grid;
+  gap: 23px;
+  padding-bottom: 98px;
+}
+
+.admin-diet-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-diet-list-heading h3,
+.admin-diet-food-section-title {
+  color: #777;
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.admin-diet-list-heading button {
+  border: 0;
+  background: transparent;
+  color: #367264;
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+.admin-diet-search-list > button {
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 36px;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+
+.admin-diet-search-list > button svg {
+  width: 34px;
+  height: 34px;
+  padding: 5px;
+  border: 2px solid #367264;
+  border-radius: 10px;
+  color: #367264;
+}
+
+.admin-diet-search-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #367264;
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.admin-diet-search-footer {
+  position: fixed;
+  right: calc((100vw - min(430px, 100vw)) / 2);
+  bottom: 0;
+  left: calc((100vw - min(430px, 100vw)) / 2);
+  display: grid;
+  place-items: center;
+  min-height: 74px;
+  background: #333;
+  color: #fff;
+  padding: 0 22px;
+  text-align: center;
+  font-size: 0.98rem;
+  font-weight: 650;
+}
+
+.admin-diet-detail-head {
+  min-height: 104px;
+}
+
+.admin-diet-detail-head button:last-child {
+  justify-self: end;
+}
+
+.admin-diet-food-hero {
+  display: grid;
+  gap: 24px;
+  border-radius: 18px;
+  background: #fff;
+  padding: 8px 16px 22px;
+}
+
+.admin-diet-food-image {
+  position: relative;
+  min-height: 158px;
+  border-radius: 13px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.admin-diet-food-image span {
+  position: absolute;
+  top: 24px;
+  right: 22px;
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 650;
+}
+
+.admin-diet-food-image strong {
+  position: absolute;
+  left: 20px;
+  bottom: 22px;
+  color: #fff;
+  font-size: 1.42rem;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.admin-diet-detail-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr) 24px;
+  align-items: end;
+  gap: 16px;
+}
+
+.admin-diet-detail-fields label {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-diet-detail-fields label span {
+  color: #8c8c8c;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.admin-diet-detail-fields input,
+.admin-diet-detail-fields select {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 12px;
+  background: #f5f5f5;
+  color: #1b1b1b;
+  padding: 0 18px;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.admin-diet-detail-fields > svg {
+  align-self: center;
+  margin-bottom: 17px;
+  color: #367264;
+}
+
+.admin-diet-breakdown-title {
+  margin: 48px 0 18px;
+  color: #171717;
+  font-size: 1.42rem;
+  line-height: 1.18;
+  font-weight: 900;
+}
+
+.admin-diet-macro-card,
+.admin-diet-micro-card {
+  border-radius: 18px;
+  background: #fff;
+}
+
+.admin-diet-macro-card {
+  padding: 22px 18px;
+}
+
+.admin-diet-calories-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid #e6e6e6;
+  padding-bottom: 26px;
+}
+
+.admin-diet-calories-row small {
+  display: block;
+  color: #8c8c8c;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.admin-diet-calories-row strong {
+  display: block;
+  margin-top: 9px;
+  color: #444;
+  font-size: 2.42rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.admin-diet-calories-row em {
+  border-radius: 14px;
+  background: #f5f5f5;
+  color: #1f1f1f;
+  padding: 16px 18px;
+  font-size: 0.98rem;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.admin-diet-macro-lines {
+  display: grid;
+  gap: 26px;
+  padding-top: 28px;
+}
+
+.admin-diet-macro-lines p,
+.admin-diet-micro-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  margin: 0;
+  color: #444;
+  font-size: 1.1rem;
+  font-weight: 750;
+}
+
+.admin-diet-macro-lines p strong {
+  color: #555;
+  font-weight: 650;
+}
+
+.admin-diet-macro-lines p span {
+  color: #111;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.admin-diet-micro-card {
+  min-height: 86px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0 24px;
+  color: rgba(0, 0, 0, 0.08);
+}
+
+.admin-diet-bottom-add {
+  position: fixed;
+  right: calc((100vw - min(430px, 100vw)) / 2);
+  bottom: 0;
+  left: calc((100vw - min(430px, 100vw)) / 2);
+  display: grid;
+  place-items: center;
+  min-height: 110px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 16px;
+}
+
+.admin-diet-bottom-add button {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 11px;
+  background: #367264;
+  color: #fff;
+  font-size: 1.12rem;
+  font-weight: 900;
+}
+
+.admin-diet-tracker-loading {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  color: #367264;
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.spin {
+  animation: admin-diet-spin 0.8s linear infinite;
+}
+
+@keyframes admin-diet-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 390px) {
+  .admin-diet-tracker {
+    padding-inline: 14px;
+  }
+
+  .admin-diet-calorie-card {
+    grid-template-columns: 76px minmax(0, 1fr) 48px;
+    gap: 12px;
+  }
+
+  .admin-diet-calorie-card strong,
+  .admin-diet-meal-heading h2 {
+    font-size: 1.28rem;
+  }
+
+  .admin-diet-meal-heading span {
+    font-size: 0.96rem;
+  }
+
+  .admin-diet-detail-fields {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.7fr) 20px;
+    gap: 10px;
+  }
 }

@@ -77,6 +77,11 @@ function HomeWorkoutCalendar() {
     return now >= unlockAt;
   };
 
+  const unlockedDays = useMemo(() => {
+    if (!start) return 0;
+    return Array.from({ length: TOTAL_DAYS }, (_, index) => index + 1).filter(isUnlocked).length;
+  }, [start, now]);
+
   if (loading) {
     return (
       <div className="elite-workout-page">
@@ -176,6 +181,24 @@ function HomeWorkoutCalendar() {
           </p>
         </div>
       </section>
+
+      <div className="home-workout-status-strip">
+        <div className="home-workout-status-card status-bright-blue">
+          <span>Unlocked</span>
+          <strong>{unlockedDays}</strong>
+          <small>{expired ? "Plan finished" : "Ready to train"}</small>
+        </div>
+        <div className="home-workout-status-card status-bright-pink">
+          <span>{expired ? "Renew" : "Next unlock"}</span>
+          <strong>{expired ? "—" : `Day ${Math.min(unlockedDays + 1, TOTAL_DAYS)}`}</strong>
+          <small>{expired ? "Purchase again" : `${TOTAL_DAYS - unlockedDays} days left`}</small>
+        </div>
+      </div>
+
+      <div className="home-workout-info-heading">
+        <h2>Daily Workout</h2>
+        <p>Each day opens a new workout in your 30-day home plan. Tap the unlocked day to view today's routine.</p>
+      </div>
 
       <div className="home-cal-grid">
         {Array.from({ length: TOTAL_DAYS }, (_, index) => index + 1).map((dayNumber) => {

@@ -1,13 +1,10 @@
-const mongoose = require("mongoose");
-require("dotenv").config();
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
-
-const PricingPlan = require("./models/PricingPlan");
+import mongoose from "mongoose";
+import { connectDB } from "@/lib/db";
+import { PricingPlan } from "@/models/PricingPlan";
 
 // Seeds the admin-editable PricingPlan rows from the current hardcoded prices.
-// baseAmount is stored in INR major units (rupees), matching what paymentRoutes
-// expects (it multiplies by 100 to get paise). Safe to re-run: it upserts and
-// never overwrites a price an admin has already changed.
+// baseAmount is stored in INR major units (rupees); paymentRoutes multiplies by
+// 100 to get paise. Safe to re-run: upserts and never overwrites an admin price.
 const SEED_PLANS = [
   { planKey: "normal-workouts", title: "Normal Workout", baseAmount: 80 },
   { planKey: "home-workout", title: "Home Workout", baseAmount: 150 },
@@ -15,13 +12,15 @@ const SEED_PLANS = [
 ];
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI);
+  await connectDB();
 
   for (const plan of SEED_PLANS) {
     const existing = await PricingPlan.findOne({ planKey: plan.planKey });
 
     if (existing) {
-      console.log(`Skipping ${plan.planKey} (already exists: ${existing.baseAmount} ${existing.baseCurrency})`);
+      console.log(
+        `Skipping ${plan.planKey} (already exists: ${existing.baseAmount} ${existing.baseCurrency})`
+      );
       continue;
     }
 
@@ -38,6 +37,7 @@ async function run() {
   }
 
   console.log("Pricing seed complete.");
+  await mongoose.disconnect();
   process.exit(0);
 }
 

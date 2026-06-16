@@ -1,50 +1,36 @@
-const fs = require("fs");
-const path = require("path");
-const mongoose = require("mongoose");
-require("dotenv").config();
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
-
-const Exercise = require("./models/Exercise");
+import fs from "fs";
+import path from "path";
+import mongoose from "mongoose";
+import { connectDB } from "@/lib/db";
+import { Exercise } from "@/models/Exercise";
 
 const API_BASE = "https://oss.exercisedb.dev/api/v1";
-const CACHE_FILE = path.join(__dirname, ".exercisedb-gif-cache.json");
+const CACHE_FILE = path.join(process.cwd(), ".exercisedb-gif-cache.json");
 const REQUEST_DELAY_MS = 1500;
 const STOPWORDS = new Set([
-  "with",
-  "on",
-  "the",
-  "a",
-  "an",
-  "and",
-  "for",
-  "of",
-  "to",
-  "male",
-  "female",
-  "in",
-  "at",
-  "your",
+  "with", "on", "the", "a", "an", "and", "for", "of", "to",
+  "male", "female", "in", "at", "your",
 ]);
 const MATCH_THRESHOLD = 0.6;
 
-function delay(ms) {
+function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function fetchJson(url) {
+async function fetchJson(url: string): Promise<any> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
   return res.json();
 }
 
-function singularize(token) {
+function singularize(token: string): string {
   if (token.length >= 3 && token.endsWith("s") && !token.endsWith("ss")) {
     return token.slice(0, -1);
   }
   return token;
 }
 
-function tokenize(name) {
+function tokenize(name: unknown): string[] {
   return String(name || "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
@@ -54,18 +40,16 @@ function tokenize(name) {
     .filter((token) => !STOPWORDS.has(token));
 }
 
-function normalizeName(name) {
-  return tokenize(name).sort().join(" ");
-}
+type CatalogEntry = { exerciseId: string; name: string; gifUrl: string };
 
-async function fetchGifCatalog() {
+async function fetchGifCatalog(): Promise<Map<string, CatalogEntry>> {
   if (fs.existsSync(CACHE_FILE)) {
-    const cached = JSON.parse(fs.readFileSync(CACHE_FILE, "utf-8"));
+    const cached: CatalogEntry[] = JSON.parse(fs.readFileSync(CACHE_FILE, "utf-8"));
     console.log(`Using cached catalog (${cached.length} exercises) from ${CACHE_FILE}`);
     return new Map(cached.map((entry) => [entry.exerciseId, entry]));
   }
 
-  const catalog = new Map();
+  const catalog = new Map<string, CatalogEntry>();
 
   await delay(REQUEST_DELAY_MS);
   const bodyParts = await fetchJson(`${API_BASE}/bodyparts`);
@@ -74,10 +58,10 @@ async function fetchGifCatalog() {
   await delay(REQUEST_DELAY_MS);
   const muscles = await fetchJson(`${API_BASE}/muscles`);
 
-  const filters = [
-    ...bodyParts.data.map((entry) => ["bodyParts", entry.name]),
-    ...equipments.data.map((entry) => ["equipments", entry.name]),
-    ...muscles.data.map((entry) => ["targetMuscles", entry.name]),
+  const filters: [string, string][] = [
+    ...bodyParts.data.map((entry: any) => ["bodyParts", entry.name]),
+    ...equipments.data.map((entry: any) => ["equipments", entry.name]),
+    ...muscles.data.map((entry: any) => ["targetMuscles", entry.name]),
   ];
 
   for (const [key, value] of filters) {
@@ -95,7 +79,7 @@ async function fetchGifCatalog() {
         }
       }
     } catch (error) {
-      console.error(`Failed to fetch ${key}=${value}:`, error.message);
+      console.error(`Failed to fetch ${key}=${value}:`, (error as Error).message);
     }
   }
 
@@ -103,9 +87,14 @@ async function fetchGifCatalog() {
   return catalog;
 }
 
-function buildLookup(catalog) {
-  const exact = new Map();
-  const entries = [];
+type Lookup = {
+  exact: Map<string, string>;
+  entries: { tokens: Set<string>; gifUrl: string; name: string }[];
+};
+
+function buildLookup(catalog: Map<string, CatalogEntry>): Lookup {
+  const exact = new Map<string, string>();
+  const entries: Lookup["entries"] = [];
 
   for (const { name, gifUrl } of catalog.values()) {
     const tokens = tokenize(name);
@@ -117,7 +106,7 @@ function buildLookup(catalog) {
   return { exact, entries };
 }
 
-function findMatch(name, lookup) {
+function findMatch(name: string, lookup: Lookup): string | null {
   const tokens = tokenize(name);
   const norm = tokens.slice().sort().join(" ");
 
@@ -127,7 +116,7 @@ function findMatch(name, lookup) {
   const tokenSet = new Set(tokens.filter((token) => token.length >= 2));
   if (tokenSet.size < 2) return null;
 
-  let best = null;
+  let best: Lookup["entries"][number] | null = null;
   let bestScore = 0;
 
   for (const entry of lookup.entries) {
@@ -155,7 +144,7 @@ function findMatch(name, lookup) {
 }
 
 async function main() {
-  await mongoose.connect(process.env.MONGODB_URI);
+  await connectDB();
   console.log("Connected to MongoDB");
 
   console.log("Fetching GIF catalog from oss.exercisedb.dev...");
@@ -167,7 +156,7 @@ async function main() {
 
   let matched = 0;
   let unmatched = 0;
-  const unmatchedSamples = [];
+  const unmatchedSamples: string[] = [];
 
   for (const exercise of exercises) {
     const gifUrl = findMatch(exercise.name, lookup);

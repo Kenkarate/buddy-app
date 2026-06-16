@@ -3,7 +3,7 @@ import { Payment } from "@/models/Payment";
 export const PLAN_KEYS = ["personal-training", "normal-workouts", "home-workout"];
 
 // Mongoose user document (loose typing — these helpers mutate it dynamically).
-type UserDoc = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+type UserDoc = any;
 
 function addMonths(date: Date, months: number): Date {
   const next = new Date(date);

@@ -7,12 +7,6 @@ export function toDateKey(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
-function addDays(dateKey: string, amount: number): string {
-  const date = new Date(`${dateKey}T00:00:00`);
-  date.setDate(date.getDate() + amount);
-  return toDateKey(date);
-}
-
 function assignmentSundayForDate(value: Date | string = new Date()): string {
   const date =
     value instanceof Date ? new Date(value) : new Date(`${value}T00:00:00`);

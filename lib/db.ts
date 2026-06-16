@@ -15,7 +15,6 @@ interface MongooseCache {
 // and is reused across serverless invocations (the Next equivalent of the
 // module-level `isConnected` guard in the old server/index.js).
 declare global {
-  // eslint-disable-next-line no-var
   var _mongooseCache: MongooseCache | undefined;
 }
 

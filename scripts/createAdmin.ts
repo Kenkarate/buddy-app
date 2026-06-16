@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import { connectDB } from "@/lib/db";
+import { User } from "@/models/User";
 
-const User = require("./models/User");
-
+// Run with: npm run create-admin  (loads .env.local via the script's --env-file)
 async function createOrFixAdmin() {
-  await mongoose.connect(process.env.MONGODB_URI);
+  await connectDB();
 
   const email = "admin@buddy.com";
   const password = "admin12345";
@@ -21,10 +21,7 @@ async function createOrFixAdmin() {
       role: "admin",
       subscriptionStatus: "paid",
     },
-    {
-      upsert: true,
-      returnDocument: "after",
-    }
+    { upsert: true, returnDocument: "after" }
   );
 
   console.log("Admin ready");
@@ -32,7 +29,11 @@ async function createOrFixAdmin() {
   console.log("Password:", password);
   console.log("Role:", admin.role);
 
-  process.exit();
+  await mongoose.disconnect();
+  process.exit(0);
 }
 
-createOrFixAdmin();
+createOrFixAdmin().catch((error) => {
+  console.error("createAdmin failed:", error);
+  process.exit(1);
+});

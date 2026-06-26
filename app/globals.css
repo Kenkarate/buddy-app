@@ -6698,7 +6698,511 @@ button {
   color: #9ca3af;
 }
 
+/* ===================== payment / razorpay checkout pages ===================== */
+
+.premium-payment-page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 64px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
+    radial-gradient(ellipse at 80% 10%, rgba(16, 185, 129, 0.12), transparent 50%),
+    linear-gradient(180deg, #0a0e17 0%, #050605 60%);
+  animation: paymentFadeIn 0.5s ease-out;
+}
+
+@keyframes paymentFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.payment-hero-premium {
+  text-align: center;
+  margin-bottom: 28px;
+  padding-top: 12px;
+}
+
+.payment-hero-premium svg {
+  color: #f59e0b;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.35));
+}
+
+.payment-hero-premium p {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin: 0 0 6px;
+}
+
+.payment-hero-premium h1 {
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 6px;
+  line-height: 1.15;
+}
+
+.payment-hero-premium span {
+  font-size: 0.88rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+.premium-price-card {
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(99, 102, 241, 0.08), transparent 40%),
+    rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.premium-price-card > svg {
+  color: #818cf8;
+}
+
+.premium-price-card h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.premium-price-card > p {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  text-align: center;
+  margin: -8px 0 0;
+  line-height: 1.4;
+}
+
+.premium-benefits {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.premium-benefits > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.premium-benefits svg {
+  flex-shrink: 0;
+  color: #34d399;
+}
+
+.premium-benefits span {
+  font-size: 0.88rem;
+  color: #d1d5db;
+  font-weight: 600;
+}
+
+.premium-price-card > .error {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.premium-price-card > button {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  box-shadow:
+    0 8px 24px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.premium-price-card > button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
+}
+
+.premium-price-card > button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.premium-price-card > button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Light theme */
+:root[data-theme="light"] .premium-payment-page {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.08), transparent 55%),
+    radial-gradient(ellipse at 80% 10%, rgba(16, 185, 129, 0.06), transparent 50%),
+    linear-gradient(180deg, #f3f4f6 0%, #fff 60%);
+}
+
+:root[data-theme="light"] .payment-hero-premium h1 { color: #111827; }
+:root[data-theme="light"] .payment-hero-premium span,
+:root[data-theme="light"] .payment-hero-premium p { color: #6b7280; }
+
+:root[data-theme="light"] .premium-price-card {
+  border-color: rgba(99, 102, 241, 0.15);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .premium-price-card h2 { color: #111827; }
+:root[data-theme="light"] .premium-price-card > p { color: #6b7280; }
+:root[data-theme="light"] .premium-benefits span { color: #374151; }
+:root[data-theme="light"] .premium-benefits { border-top-color: rgba(0, 0, 0, 0.06); }
+
+/* ── Razorpay checkout page ── */
+
+.dummy-razorpay-page {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(16, 185, 129, 0.12), transparent 50%),
+    linear-gradient(180deg, #0a0e17 0%, #050605 65%);
+  animation: paymentFadeIn 0.45s ease-out;
+}
+
+.razorpay-box {
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid rgba(16, 185, 129, 0.16);
+  border-radius: 28px;
+  background:
+    linear-gradient(155deg, rgba(16, 185, 129, 0.07), transparent 35%),
+    rgba(17, 24, 39, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 32px 22px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.razorpay-logo {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.12));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.razorpay-logo svg {
+  color: #34d399;
+}
+
+.razorpay-box h1 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+}
+
+.razorpay-box > p {
+  font-size: 0.84rem;
+  color: #9ca3af;
+  text-align: center;
+  margin: -6px 0 4px;
+  line-height: 1.4;
+}
+
+.razorpay-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.razorpay-summary span {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.razorpay-summary strong {
+  font-size: 0.92rem;
+  color: #fff;
+  font-weight: 800;
+}
+
+.secure-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.secure-row svg {
+  color: #34d399;
+}
+
+.secure-row span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6ee7b7;
+  letter-spacing: 0.02em;
+}
+
+.razorpay-box > .error {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.razorpay-box > button {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  box-shadow:
+    0 8px 24px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.razorpay-box > button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.4);
+}
+
+.razorpay-box > button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.razorpay-box > button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.razorpay-cancel-btn {
+  background: none !important;
+  box-shadow: none !important;
+  color: #9ca3af !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  min-height: 40px !important;
+  transition: color 0.15s !important;
+}
+
+.razorpay-cancel-btn:hover {
+  color: #d1d5db !important;
+}
+
+/* Light theme */
+:root[data-theme="light"] .dummy-razorpay-page {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(16, 185, 129, 0.06), transparent 50%),
+    linear-gradient(180deg, #f3f4f6 0%, #fff 65%);
+}
+
+:root[data-theme="light"] .razorpay-box {
+  border-color: rgba(16, 185, 129, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="light"] .razorpay-box h1 { color: #111827; }
+:root[data-theme="light"] .razorpay-box > p { color: #6b7280; }
+:root[data-theme="light"] .razorpay-summary {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+:root[data-theme="light"] .razorpay-summary span { color: #6b7280; }
+:root[data-theme="light"] .razorpay-summary strong { color: #111827; }
+
+/* ── Purchased plans section on profile ── */
+
+.purchased-plans-section {
+  margin-top: 4px;
+}
+
+.purchased-plans-section .section-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.purchased-plans-section .section-heading-row svg {
+  color: #818cf8;
+}
+
+.purchased-plans-section .section-heading-row h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.purchased-plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.purchased-plan-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: background 0.15s;
+}
+
+.purchased-plan-info h3 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.purchased-plan-info small {
+  display: block;
+  font-size: 0.76rem;
+  color: #9ca3af;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.purchased-plan-badge {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.purchased-plan-badge.paid {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+}
+
+.purchased-plan-badge.expired {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.purchased-plan-badge.failed {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+}
+
+.no-plans-empty {
+  padding: 20px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.no-plans-empty p {
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.no-plans-empty button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.25);
+}
+
+.no-plans-empty button:hover {
+  transform: translateY(-1px);
+}
+
+/* Light theme for purchased plans */
+:root[data-theme="light"] .purchased-plans-section .section-heading-row h2 { color: #111827; }
+:root[data-theme="light"] .purchased-plan-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+:root[data-theme="light"] .purchased-plan-info h3 { color: #111827; }
+:root[data-theme="light"] .purchased-plan-info small { color: #6b7280; }
+:root[data-theme="light"] .no-plans-empty {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 /* ===================== admin styles (was client/src/admin.css) ===================== */
+
 
 /*
   Tailwind preflight is intentionally NOT imported globally because it would

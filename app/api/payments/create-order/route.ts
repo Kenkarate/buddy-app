@@ -105,11 +105,14 @@ export async function POST(req: NextRequest) {
       redirectPath: programRedirects[selectedPlan.finalProgram],
       country,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("CREATE RAZORPAY ORDER ERROR:", error);
-    return NextResponse.json(
-      { message: (error as Error).message || "Failed to create payment order" },
-      { status: 500 }
-    );
+    const razorpayError = error?.error?.description || error?.error;
+    const msg =
+      typeof razorpayError === "string"
+        ? razorpayError
+        : (error as Error).message || "Failed to create payment order";
+    const status = error?.statusCode || 500;
+    return NextResponse.json({ message: msg }, { status });
   }
 }

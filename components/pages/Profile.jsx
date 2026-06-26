@@ -6,6 +6,7 @@ import {
   Bell,
   ChevronDown,
   ChevronUp,
+  CreditCard,
   HelpCircle,
   Headphones,
   KeyRound,
@@ -399,6 +400,50 @@ if (profileLoading && !profile && !userEmail) {
           )}
         </section>
       )}
+
+      <section className="purchased-plans-section">
+        <div className="section-heading-row">
+          <CreditCard size={26} />
+          <h2>Your Plans</h2>
+        </div>
+
+        {(profile?.purchasedPlans || []).length > 0 ? (
+          <div className="purchased-plans-list">
+            {(profile.purchasedPlans || []).map((purchase, idx) => {
+              const isActive =
+                purchase.paymentStatus === "paid" &&
+                (!purchase.planExpiryDate || new Date(purchase.planExpiryDate) > new Date());
+              const statusLabel = isActive
+                ? "paid"
+                : purchase.paymentStatus === "paid"
+                ? "expired"
+                : purchase.paymentStatus || "expired";
+
+              return (
+                <div className="purchased-plan-card" key={purchase.paymentId || idx}>
+                  <div className="purchased-plan-info">
+                    <h3>{planLabels[purchase.plan] || purchase.plan}</h3>
+                    <small>
+                      Purchased {purchase.purchaseDate ? new Date(purchase.purchaseDate).toLocaleDateString() : "—"}
+                      {purchase.planExpiryDate && (
+                        <> · {isActive ? "Expires" : "Expired"} {new Date(purchase.planExpiryDate).toLocaleDateString()}</>
+                      )}
+                    </small>
+                  </div>
+                  <span className={`purchased-plan-badge ${statusLabel}`}>{statusLabel}</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="no-plans-empty">
+            <p>You haven&apos;t purchased any plans yet.</p>
+            <button type="button" onClick={() => navigate("/")}>
+              Browse Plans
+            </button>
+          </div>
+        )}
+      </section>
 
       <section className="faq-section">
         <div className="section-heading-row">

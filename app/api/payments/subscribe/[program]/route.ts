@@ -17,6 +17,7 @@ export async function POST(
   { params }: { params: Promise<{ program: string }> }
 ) {
   const userId = getAuthIdFromRequest(req);
+  console.log(userId);
   if (!userId) {
     return NextResponse.json({ message: "Not authorized" }, { status: 401 });
   }
@@ -81,11 +82,18 @@ export async function POST(
       shortUrl: subscription.short_url,
       redirectPath: programRedirects[program],
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("CREATE SUBSCRIPTION ERROR:", error);
-    return NextResponse.json(
-      { message: (error as Error).message || "Failed to start subscription" },
-      { status: 500 }
-    );
+
+    // Surface Razorpay API errors (e.g. 401 Unauthorized, invalid plan) so the
+    // client and logs show the real cause, not just "Failed to start subscription".
+    const razorpayError = error?.error?.description || error?.error;
+    const msg =
+      typeof razorpayError === "string"
+        ? razorpayError
+        : (error as Error).message || "Failed to start subscription";
+    const status = error?.statusCode || 500;
+
+    return NextResponse.json({ message: msg }, { status });
   }
 }

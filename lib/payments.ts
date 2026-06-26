@@ -27,7 +27,9 @@ export const programRedirects: Record<string, string> = {
 };
 
 // Plans billed as auto-renewing Razorpay subscriptions (vs one-time orders).
-export const SUBSCRIPTION_PROGRAMS = new Set(["home-workout", "normal-workouts"]);
+// Requires the Razorpay Subscriptions addon to be enabled on the account.
+// Set to empty if your account only has basic Payments enabled.
+export const SUBSCRIPTION_PROGRAMS = new Set<string>([]);
 
 export function razorpayClient(): Razorpay | null {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

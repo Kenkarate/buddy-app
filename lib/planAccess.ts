@@ -17,7 +17,8 @@ export const PLAN_DETAILS: Record<string, { key: string; title: string; price: s
 
 // Plans billed as auto-renewing monthly subscriptions (vs one-time payment).
 // Must mirror SUBSCRIPTION_PROGRAMS in lib/payments.ts.
-export const SUBSCRIPTION_PLANS = new Set(["normal-workouts", "home-workout"]);
+// Empty when the Razorpay Subscriptions addon is not enabled on the account.
+export const SUBSCRIPTION_PLANS = new Set<string>([]);
 
 export function normalizePlan(program: unknown): string {
   const plan = PLAN_DETAILS[String(program || "").trim().toLowerCase()];

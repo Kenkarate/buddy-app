@@ -5,7 +5,16 @@ import { CheckCircle, Crown, Dumbbell } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { getPlanDetails, normalizePlan, isSubscriptionPlan } from "@/lib/planAccess";
-import { fetchCurrencyPricing } from "@/lib/currencyClient";
+import { detectClientCountry, fetchCurrencyPricing } from "@/lib/currencyClient";
+
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("buddyUser") || "{}");
+  } catch {
+    localStorage.removeItem("buddyUser");
+    return {};
+  }
+}
 
 function Payment() {
   const navigate = useNavigate();
@@ -16,14 +25,10 @@ function Payment() {
 
   useEffect(() => {
     let cancelled = false;
-
     fetchCurrencyPricing(api).then((data) => {
       if (!cancelled) setPricing(data);
     });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const planDetails = {
@@ -50,25 +55,94 @@ function Payment() {
       ],
     },
     "home-workout": {
-  title: "Home Workout",
-  price: getPlanDetails("home-workout").price,
-  description: "Home workout suggestions based on your available equipment.",
-  benefits: [
-    "Equipment-based workout suggestions",
-    "No gym required",
-    "Sets and reps included",
-    "Beginner-friendly home plans",
-  ],
-},
+      title: "Home Workout",
+      price: getPlanDetails("home-workout").price,
+      description: "Home workout suggestions based on your available equipment.",
+      benefits: [
+        "Equipment-based workout suggestions",
+        "No gym required",
+        "Sets and reps included",
+        "Beginner-friendly home plans",
+      ],
+    },
   };
 
   const normalizedProgram = normalizePlan(program) || "normal-workouts";
   const selectedPlan = planDetails[normalizedProgram] || planDetails["normal-workouts"];
   const displayPrice = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.price;
-  // Use DB-driven billing mode when available; fall back to hardcoded set.
   const subscription = pricing?.billingModes != null
     ? pricing.billingModes[normalizedProgram] === "subscription"
     : isSubscriptionPlan(normalizedProgram);
+
+  const openSubscription = async () => {
+    const subRes = await api.post(`/payments/subscribe/${normalizedProgram}`);
+    const { subscriptionId, keyId, planTitle } = subRes.data;
+    const user = getStoredUser();
+
+    if (!window.Razorpay) throw new Error("Razorpay script not loaded. Please refresh.");
+
+    const options = {
+      key: keyId,
+      subscription_id: subscriptionId,
+      name: "Buddy Fitness",
+      description: `${planTitle} · Monthly`,
+      prefill: { name: user.name || "", email: user.email || "" },
+      theme: { color: "#050605" },
+      handler: async function (response) {
+        const verifyRes = await api.post("/payments/subscription/verify", response);
+        if (verifyRes.data.success) {
+          localStorage.setItem("buddyUser", JSON.stringify(verifyRes.data.user));
+          localStorage.setItem("buddySelectedProgram", verifyRes.data.program);
+          localStorage.setItem("buddyPaymentStatus", "paid");
+          localStorage.removeItem("buddyPendingProgram");
+          navigate(verifyRes.data.redirectPath || "/workouts", { replace: true });
+        }
+      },
+      modal: { ondismiss: () => setLoading(false) },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
+
+  const openOrder = async () => {
+    const orderRes = await api.post("/payments/create-order", {
+      program: normalizedProgram,
+      country: pricing?.country || (await detectClientCountry()),
+    });
+    const { orderId, amount, currency, keyId, planTitle } = orderRes.data;
+    const user = getStoredUser();
+
+    if (!window.Razorpay) throw new Error("Razorpay script not loaded. Please refresh.");
+
+    const options = {
+      key: keyId,
+      amount,
+      currency,
+      name: "Buddy Fitness",
+      description: planTitle,
+      order_id: orderId,
+      prefill: { name: user.name || "", email: user.email || "" },
+      theme: { color: "#050605" },
+      handler: async function (response) {
+        const verifyRes = await api.post("/payments/verify", {
+          ...response,
+          program: normalizedProgram,
+        });
+        if (verifyRes.data.success) {
+          localStorage.setItem("buddyUser", JSON.stringify(verifyRes.data.user));
+          localStorage.setItem("buddySelectedProgram", verifyRes.data.program);
+          localStorage.setItem("buddyPaymentStatus", "paid");
+          localStorage.removeItem("buddyPendingProgram");
+          navigate(verifyRes.data.redirectPath || "/workouts", { replace: true });
+        }
+      },
+      modal: { ondismiss: () => setLoading(false) },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
 
   const proceedToPay = async () => {
     if (loading) return;
@@ -77,9 +151,7 @@ function Payment() {
 
     try {
       localStorage.setItem("buddyPendingProgram", normalizedProgram);
-      const res = await api.post("/payments/select-plan", {
-        program: normalizedProgram,
-      });
+      const res = await api.post("/payments/select-plan", { program: normalizedProgram });
 
       if (res.data.user) {
         localStorage.setItem("buddyUser", JSON.stringify(res.data.user));
@@ -93,10 +165,17 @@ function Payment() {
         return;
       }
 
-      navigate(`/razorpay/${normalizedProgram}`);
+      if (subscription) {
+        await openSubscription();
+      } else {
+        await openOrder();
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to open payment. Please try again.");
-    } finally {
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Unable to open payment. Please try again."
+      );
       setLoading(false);
     }
   };
@@ -127,7 +206,7 @@ function Payment() {
         {error && <p className="error">{error}</p>}
 
         <button onClick={proceedToPay} disabled={loading}>
-          {loading ? "Checking plan..." : "Proceed to Pay"}
+          {loading ? "Opening Razorpay..." : "Proceed to Pay"}
         </button>
       </div>
     </div>

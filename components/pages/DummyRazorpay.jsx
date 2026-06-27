@@ -75,7 +75,10 @@ function DummyRazorpay() {
   };
 
   const displayAmount = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.amount;
-  const subscription = isSubscriptionPlan(normalizedProgram);
+  // Use DB-driven billing mode when available; fall back to hardcoded set.
+  const subscription = pricing?.billingModes != null
+    ? pricing.billingModes[normalizedProgram] === "subscription"
+    : isSubscriptionPlan(normalizedProgram);
 
   const startSubscription = async () => {
     const subRes = await api.post(`/payments/subscribe/${normalizedProgram}`);

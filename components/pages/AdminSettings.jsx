@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import adminApi from "@/lib/adminApi";
 
+// Plans that support subscription billing. personal-training is always one-time.
+const SUBSCRIPTION_CAPABLE = new Set(["normal-workouts", "home-workout"]);
+
 const KNOWN_PLANS = [
   { planKey: "normal-workouts", title: "Normal Workout" },
   { planKey: "home-workout", title: "Home Workout" },
@@ -33,11 +36,13 @@ function AdminSettings() {
       setPlans(
         KNOWN_PLANS.map((known) => {
           const existing = byKey.get(known.planKey);
+          const defaultMonthly = SUBSCRIPTION_CAPABLE.has(known.planKey);
           return {
             planKey: known.planKey,
             title: existing?.title || known.title,
             baseAmount: existing?.baseAmount ?? "",
             baseCurrency: existing?.baseCurrency || "INR",
+            monthly: existing ? existing.monthly !== false : defaultMonthly,
           };
         })
       );
@@ -69,6 +74,7 @@ function AdminSettings() {
         baseCurrency: plan.baseCurrency || "INR",
         baseAmount: Number(plan.baseAmount),
         isActive: true,
+        monthly: plan.monthly,
       });
       setSavedKey(plan.planKey);
     } catch (saveError) {
@@ -122,6 +128,36 @@ function AdminSettings() {
                     className="w-32"
                   />
                 </label>
+
+                {SUBSCRIPTION_CAPABLE.has(plan.planKey) && (
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Billing</span>
+                    <div className="flex rounded-md border overflow-hidden text-sm">
+                      <button
+                        type="button"
+                        onClick={() => updateField(plan.planKey, "monthly", true)}
+                        className={`px-3 py-1.5 transition-colors ${
+                          plan.monthly
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Subscription
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateField(plan.planKey, "monthly", false)}
+                        className={`px-3 py-1.5 transition-colors ${
+                          !plan.monthly
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        One-time
+                      </button>
+                    </div>
+                  </label>
+                )}
 
                 <Button
                   onClick={() => savePlan(plan)}

@@ -65,7 +65,10 @@ function Payment() {
   const normalizedProgram = normalizePlan(program) || "normal-workouts";
   const selectedPlan = planDetails[normalizedProgram] || planDetails["normal-workouts"];
   const displayPrice = pricing?.prices?.[normalizedProgram]?.formatted || selectedPlan.price;
-  const subscription = isSubscriptionPlan(normalizedProgram);
+  // Use DB-driven billing mode when available; fall back to hardcoded set.
+  const subscription = pricing?.billingModes != null
+    ? pricing.billingModes[normalizedProgram] === "subscription"
+    : isSubscriptionPlan(normalizedProgram);
 
   const proceedToPay = async () => {
     if (loading) return;

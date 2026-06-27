@@ -29,7 +29,7 @@ async function run() {
       title: plan.title,
       baseAmount: plan.baseAmount,
       baseCurrency: "INR",
-      monthly: true,
+      monthly: false,
       isActive: true,
     });
 

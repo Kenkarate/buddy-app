@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { User } from "@/models/User";
+import { PricingPlan } from "@/models/PricingPlan";
 import { getAuthIdFromRequest } from "@/lib/auth";
 import { upsertSubscription } from "@/lib/planManagement";
 import {
@@ -34,9 +35,18 @@ export async function POST(
     }
 
     const program = selectedPlan.finalProgram;
-    if (!SUBSCRIPTION_PROGRAMS.has(program)) {
+
+    await connectDB();
+
+    // Check DB billing mode; fall back to hardcoded set for unseeded plans.
+    const pricingRow = await PricingPlan.findOne({ planKey: program }).select("monthly").lean() as { monthly?: boolean } | null;
+    const isSubscription = pricingRow
+      ? pricingRow.monthly !== false
+      : SUBSCRIPTION_PROGRAMS.has(program);
+
+    if (!isSubscription) {
       return NextResponse.json(
-        { message: "This plan is not available as a subscription" },
+        { message: "This plan is configured for one-time payment, not subscription" },
         { status: 400 }
       );
     }
@@ -49,7 +59,6 @@ export async function POST(
       );
     }
 
-    await connectDB();
     const planId = await getOrCreateRazorpayPlan(razorpay, program, selectedPlan);
 
     const subscription = await razorpay.subscriptions.create({

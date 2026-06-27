@@ -24,10 +24,22 @@ export const PUT = withErrorHandler(
     const baseCurrency = requireString(body.baseCurrency, "baseCurrency").toUpperCase();
     const baseAmount = requireNumber(body.baseAmount, "baseAmount", { min: 0 });
     const isActive = body.isActive !== false;
+    const monthly = body.monthly !== false;
+
+    // When switching from subscription to one-time, the cached Razorpay plan ID
+    // is no longer valid — a new one will be created on demand if switched back.
+    const existing = await PricingPlan.findOne({ planKey });
+    const wasSubscription = existing?.monthly !== false;
+    const clearRazorpayPlanId = wasSubscription && !monthly;
+
+    const update: Record<string, unknown> = {
+      planKey, title, baseCurrency, baseAmount, isActive, monthly,
+    };
+    if (clearRazorpayPlanId) update.razorpayPlanId = "";
 
     const plan = await PricingPlan.findOneAndUpdate(
       { planKey },
-      { planKey, title, baseCurrency, baseAmount, isActive },
+      update,
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 

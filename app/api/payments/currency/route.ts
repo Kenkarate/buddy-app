@@ -9,7 +9,8 @@ import {
   convertFromInrPaise,
   formatCurrency,
 } from "@/lib/currency";
-import { planPrices, getDbPriceMapPaise } from "@/lib/payments";
+import { PricingPlan } from "@/models/PricingPlan";
+import { planPrices, getDbPriceMapPaise, SUBSCRIPTION_PROGRAMS } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +28,28 @@ export async function GET(req: NextRequest) {
     const currency = getCurrencyForCountry(country);
     const rates = await getExchangeRates();
     await connectDB();
-    const dbPrices = await getDbPriceMapPaise();
+    const [dbPrices, pricingRows] = await Promise.all([
+      getDbPriceMapPaise(),
+      PricingPlan.find({ isActive: true }).select("planKey monthly").lean(),
+    ]);
+
+    // Build billing mode map from DB; fall back to hardcoded SUBSCRIPTION_PROGRAMS.
+    const billingModes: Record<string, "subscription" | "one-time"> = {};
+    const dbMonthlyMap = new Map(
+      (pricingRows as { planKey: string; monthly?: boolean }[]).map((r) => [r.planKey, r.monthly])
+    );
+    const seenPrograms = new Set<string>();
+    for (const plan of Object.values(planPrices)) {
+      if (seenPrograms.has(plan.finalProgram)) continue;
+      seenPrograms.add(plan.finalProgram);
+      const monthly = dbMonthlyMap.has(plan.finalProgram)
+        ? dbMonthlyMap.get(plan.finalProgram) !== false
+        : SUBSCRIPTION_PROGRAMS.has(plan.finalProgram);
+      billingModes[plan.finalProgram] = monthly ? "subscription" : "one-time";
+    }
 
     const prices: Record<string, unknown> = {};
-    const seenPrograms = new Set<string>();
+    seenPrograms.clear();
 
     for (const plan of Object.values(planPrices)) {
       if (seenPrograms.has(plan.finalProgram)) continue;
@@ -52,6 +71,7 @@ export async function GET(req: NextRequest) {
       currency,
       symbol: SUPPORTED_CURRENCIES[currency]?.symbol || currency,
       prices,
+      billingModes,
     });
   } catch (error) {
     console.error("CURRENCY DETECTION ERROR:", error);

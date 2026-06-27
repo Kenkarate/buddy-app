@@ -27,9 +27,8 @@ export const programRedirects: Record<string, string> = {
 };
 
 // Plans billed as auto-renewing Razorpay subscriptions (vs one-time orders).
-// Requires the Razorpay Subscriptions addon to be enabled on the account.
-// Set to empty if your account only has basic Payments enabled.
-export const SUBSCRIPTION_PROGRAMS = new Set<string>([]);
+// Configurable per-plan via admin settings; this is the hardcoded fallback.
+export const SUBSCRIPTION_PROGRAMS = new Set<string>();
 
 export function razorpayClient(): Razorpay | null {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

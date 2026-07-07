@@ -1,0 +1,47 @@
+import mongoose from "mongoose";
+import { connectDB } from "@/lib/db";
+import { PricingPlan } from "@/models/PricingPlan";
+
+// Seeds the admin-editable PricingPlan rows from the current hardcoded prices.
+// baseAmount is stored in INR major units (rupees); paymentRoutes multiplies by
+// 100 to get paise. Safe to re-run: upserts and never overwrites an admin price.
+const SEED_PLANS = [
+  { planKey: "normal-workouts", title: "Normal Workout", baseAmount: 80 },
+  { planKey: "home-workout", title: "Home Workout", baseAmount: 150 },
+  { planKey: "personal-training", title: "Personal Training", baseAmount: 999 },
+];
+
+async function run() {
+  await connectDB();
+
+  for (const plan of SEED_PLANS) {
+    const existing = await PricingPlan.findOne({ planKey: plan.planKey });
+
+    if (existing) {
+      console.log(
+        `Skipping ${plan.planKey} (already exists: ${existing.baseAmount} ${existing.baseCurrency})`
+      );
+      continue;
+    }
+
+    await PricingPlan.create({
+      planKey: plan.planKey,
+      title: plan.title,
+      baseAmount: plan.baseAmount,
+      baseCurrency: "INR",
+      monthly: false,
+      isActive: true,
+    });
+
+    console.log(`Seeded ${plan.planKey}: ₹${plan.baseAmount}`);
+  }
+
+  console.log("Pricing seed complete.");
+  await mongoose.disconnect();
+  process.exit(0);
+}
+
+run().catch((error) => {
+  console.error("Pricing seed failed:", error);
+  process.exit(1);
+});

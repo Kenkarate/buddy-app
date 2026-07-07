@@ -1,17 +1,9 @@
 [build]
-  command = "npm run build"
-  publish = "client/dist"
-  functions = "netlify/functions"
+  command = "next build"
+  publish = ".next"
 
-[functions]
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/api/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Runs the unified Next.js app (SSR pages, /api route handlers, the Edge proxy
+# and the Razorpay webhook) on Netlify. Replaces the old SPA + single
+# serverless-http function setup.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
